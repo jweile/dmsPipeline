@@ -1,6 +1,6 @@
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
-all: scaleAndJoin
+all: impute geneticInteractions
 
 outdir:
 	mkdir -p $(OUTDIR)
@@ -14,3 +14,10 @@ tileseq: outdir
 
 scaleAndJoin: barseqTS tileseq
 	Rscript bin/scaleAndJoin.R outdir=$(OUTDIR)
+
+impute: scaleAndJoin
+	Rscript bin/impute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_joint_results_UBE2I.csv geneName=UBE2I
+	Rscript bin/impute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_tileSEQ_results_SUMO1_transformed.csv geneName=SUMO1
+
+geneticInteractions: scaleAndJoin
+	Rscript bin/geneticInteractions.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_joint_results_UBE2I.csv
