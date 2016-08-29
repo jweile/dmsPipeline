@@ -1,6 +1,6 @@
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
-all: impute compensatory
+all: impute compensatory pickSpottingClones
 
 outdir:
 	mkdir -p $(OUTDIR)
@@ -16,12 +16,20 @@ scaleAndJoin: barseqTS tileseq
 	Rscript bin/scaleAndJoin.R outdir=$(OUTDIR)
 
 impute: scaleAndJoin
-	Rscript bin/impute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_joint_results_UBE2I.csv geneName=UBE2I
-	Rscript bin/impute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_tileSEQ_results_SUMO1_transformed.csv geneName=SUMO1
+	Rscript bin/impute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_joint_results_UBE2I.csv \
+		geneName=UBE2I
+	Rscript bin/impute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_tileSEQ_results_SUMO1_transformed.csv \
+		geneName=SUMO1
 
 geneticInteractions: scaleAndJoin
 	Rscript bin/geneticInteractions.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_joint_results_UBE2I.csv
 
-compensatory: geneticInteractions
-	Rscript bin/compensatoryMut.R outdir=$(OUTDIR) infile=$(OUTDIR)genetic_interactions.csv
+distanceMatrix: outdir
+	Rscript bin/distanceMatrix.R outdir=$(OUTDIR)
 
+compensatory: geneticInteractions distanceMatrix
+	Rscript bin/compensatoryMut.R outdir=$(OUTDIR) infile=$(OUTDIR)genetic_interactions.csv \
+		distfile=$(OUTDIR)distanceMatrix_UBE2I.csv
+
+pickSpottingClones: scaleAndJoin
+	Rscript bin/pickSpottingClones.R outdir=$(OUTDIR)
