@@ -1,6 +1,6 @@
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
-all: evaluateSpotting compensatory pickSpottingClones
+all: pickSpottingClones evaluateSpotting compensatory
 
 #Create an output directory for this pipeline run
 outdir:
