@@ -5,10 +5,11 @@ options(stringsAsFactors=FALSE)
 source("lib/liblogging.R")
 source("lib/cliargs.R")
 
-library(beeswarm)
+# library(beeswarm)
 
 outdir <- getArg("outdir",default="workspace/test/")
 infile <- getArg("infile",default="workspace/test/genetic_interactions.csv")
+distfile <- getArg("distfile",default="workspace/test/distanceMatrix_UBE2I.csv")
 
 #Init logger
 logger <- new.logger(paste0(outdir,"compensatoryMut.log"))
@@ -18,7 +19,7 @@ logger <- new.logger(paste0(outdir,"compensatoryMut.log"))
 ##############
 logger$info("Reading input")
 
-dist <- read.csv("res/ube2i_distances.csv")
+dist <- read.csv(distfile)
 colnames(dist) <- rownames(dist)
 
 gis <- read.csv(infile)
