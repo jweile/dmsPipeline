@@ -1,6 +1,6 @@
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
-all: impute geneticInteractions
+all: impute compensatory
 
 outdir:
 	mkdir -p $(OUTDIR)
@@ -21,3 +21,7 @@ impute: scaleAndJoin
 
 geneticInteractions: scaleAndJoin
 	Rscript bin/geneticInteractions.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_joint_results_UBE2I.csv
+
+compensatory: geneticInteractions
+	Rscript bin/compensatoryMut.R outdir=$(OUTDIR) infile=$(OUTDIR)genetic_interactions.csv
+
