@@ -424,7 +424,7 @@ z <- randomForest(testfeat,testscores,importance=TRUE)
 
 pdf(paste0(outdir,"imputation_",geneName,"_variableImportance.pdf"))
 varImpPlot(z)
-dev.off()
+invisible(dev.off())
 
 
 logger$info(" -> 10x cross validation")
@@ -485,7 +485,7 @@ rect(0,0:10,1,1:11,col=colRamp,border=NA)
 axis(4,at=c(.5,10.5),labels=c("0",">=1"))
 mtext("error",side=4,line=2)
 par(op)
-dev.off()
+invisible(dev.off())
 
 if (geneName == "UBE2I") {
 	pdf(paste0(outdir,"imputation_",geneName,"_scoreVpred.pdf"),9,4)
@@ -494,7 +494,7 @@ if (geneName == "UBE2I") {
 		main=sprintf("R = %.2f",cor(score,pred)),resolution=60
 	))
 	abline(v=0:1,h=0:1,col=c("firebrick3","darkolivegreen3"))
-	dev.off()
+	invisible(dev.off())
 } else {
 	pdf(paste0(outdir,"imputation_",geneName,"_scoreVpred.pdf"),7,4)
 	#Plot growth score vs predicted score
@@ -502,7 +502,7 @@ if (geneName == "UBE2I") {
 		main=sprintf("R = %.2f",cor(score,pred)),pch=20
 	))
 	abline(v=0:1,h=0:1,col=c("firebrick3","darkolivegreen3"))
-	dev.off()
+	invisible(dev.off())
 }
 
 
@@ -545,6 +545,6 @@ logger$info("Drawing complete genophenogram")
 
 pdf(paste0(outdir,"imputed_regularized_",geneName,"_genophenogram.pdf"),19,4)
 genophenogram(wt.aa,featable$pos,featable$mut.aa,score)
-dev.off()
+invisible(dev.off())
 
 logger$info("Done.")

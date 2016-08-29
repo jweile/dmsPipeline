@@ -72,7 +72,7 @@ with(ltriVccbr,arrows(ccbr.score,ltri.score-ltri.sd/2,ccbr.score,ltri.score+ltri
 abline(h=0:1,col=c("firebrick3","chartreuse3"))
 #add spline to plot
 lines(x,y,col="blue",lty="dashed",lwd=2)
-dev.off()
+invisible(dev.off())
 
 
 #################################
@@ -108,7 +108,7 @@ plot(NA,type="n",
 with(ltriVccbr,arrows(ccbr.trans.m-ccbr.trans.sd*5/2,ltri.score,ccbr.trans.m+ccbr.trans.sd*5/2,ltri.score,length=.01,code=3,angle=90))
 with(ltriVccbr,arrows(ccbr.trans.m,ltri.score-ltri.sd/2,ccbr.trans.m,ltri.score+ltri.sd/2,length=.01,code=3,angle=90))
 abline(h=0:1,v=0:1,col=c("firebrick3","chartreuse3"))
-dev.off()
+invisible(dev.off())
 
 
 ##########################################

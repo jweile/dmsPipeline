@@ -132,7 +132,7 @@ with(dm.data2,plot(epsilon,-log10(q),pch=16,
 abline(h=-log10(.05),col="red",lty="dashed")
 text(-1.7,-log10(.05),"q = 0.05",col="red",pos=3)
 par(op)
-dev.off()
+invisible(dev.off())
 
 
 ###########
