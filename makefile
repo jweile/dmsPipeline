@@ -1,6 +1,6 @@
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
-all: impute compensatory pickSpottingClones
+all: evaluateSpotting compensatory pickSpottingClones
 
 #Create an output directory for this pipeline run
 outdir:
@@ -43,3 +43,8 @@ compensatory: geneticInteractions distanceMatrix
 #Pick a set of clones to be tested in a manual spotting assay
 pickSpottingClones: scaleAndJoin
 	Rscript bin/pickSpottingClones.R outdir=$(OUTDIR)
+
+#Compare the results of the manual spotting assay to the results of the
+# previous pipeline steps (barseq, tileseq, impute, etc)
+evaluateSpotting: impute
+	Rscript bin/evaluateSpotting.R outdir=$(OUTDIR)
