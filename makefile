@@ -1,6 +1,6 @@
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
-all: pickSpottingClones evaluateSpotting compensatory
+all: pickSpottingClones evaluateSpotting compensatory accCons
 
 #Create an output directory for this pipeline run
 outdir:
@@ -48,3 +48,8 @@ pickSpottingClones: scaleAndJoin
 # previous pipeline steps (barseq, tileseq, impute, etc)
 evaluateSpotting: impute
 	Rscript bin/evaluateSpotting.R outdir=$(OUTDIR)
+
+#Plot the relationship between mutant fitness and surface accessibility,
+# interfacialness and conservation
+accCons: impute
+	Rscript bin/accCons.R outdir=$(OUTDIR)
