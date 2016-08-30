@@ -7,7 +7,7 @@
 source("lib/liblogging.R")
 source("lib/cliargs.R")
 
-library("beeswarm")
+# library("beeswarm")
 options(stringsAsFactors=FALSE)
 
 outdir <- getArg("outdir",default="workspace/test/")
