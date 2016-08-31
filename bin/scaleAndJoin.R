@@ -3,6 +3,7 @@
 # scale and join screen data       #
 ####################################
 
+source("lib/resultfile.R")
 source("lib/libyogitools.R")
 source("lib/liblogging.R")
 # source("lib/topoScatter.R")
@@ -16,6 +17,10 @@ outdir <- getArg("outdir",default="workspace/test/")
 
 #Initialize logger
 logger <- new.logger(paste0(outdir,"scaleAndJoin.log"))
+
+#Set resultfile
+html <- new.resultfile(paste0(outdir,"results.html"))
+html$section("Re-scaling and Joining of datasets")
 
 ##############
 # LOAD INPUT #
@@ -62,17 +67,20 @@ y <- predict(z,data.frame(ccbr=x,ccbr.exp=exp(x)))
 #Plot screens against each other#
 #################################
 logger$info(" -> Drawing plot")
-pdf(paste0(outdir,"scoreTransformationInput.pdf"))
-plot(NA,type="n",
-	xlim=c(-2,1),ylim=c(-.5,3),
-	xlab="RegSEQ Screen Fitness Score",ylab="BarSEQ Screen Fitness Score"
-)
-with(ltriVccbr,arrows(ccbr.score-ccbr.sd/2,ltri.score,ccbr.score+ccbr.sd/2,ltri.score,length=.01,code=3,angle=90))
-with(ltriVccbr,arrows(ccbr.score,ltri.score-ltri.sd/2,ccbr.score,ltri.score+ltri.sd/2,length=.01,code=3,angle=90))
-abline(h=0:1,col=c("firebrick3","chartreuse3"))
-#add spline to plot
-lines(x,y,col="blue",lty="dashed",lwd=2)
-invisible(dev.off())
+# pdf(paste0(outdir,"scoreTransformationInput.pdf"))
+html$subsection("Scaling Input")
+html$figure(function(){
+	plot(NA,type="n",
+		xlim=c(-2,1),ylim=c(-.5,3),
+		xlab="RegSEQ Screen Fitness Score",ylab="BarSEQ Screen Fitness Score"
+	)
+	with(ltriVccbr,arrows(ccbr.score-ccbr.sd/2,ltri.score,ccbr.score+ccbr.sd/2,ltri.score,length=.01,code=3,angle=90))
+	with(ltriVccbr,arrows(ccbr.score,ltri.score-ltri.sd/2,ccbr.score,ltri.score+ltri.sd/2,length=.01,code=3,angle=90))
+	abline(h=0:1,col=c("firebrick3","chartreuse3"))
+	#add spline to plot
+	lines(x,y,col="blue",lty="dashed",lwd=2)
+},paste0(outdir,"scoreTransformationInput"))
+# invisible(dev.off())
 
 
 #################################
@@ -100,15 +108,18 @@ ltriVccbr <- cbind(ltriVccbr,ccbr.trans=ccbr.trans)
 logger$info(" -> Drawing plot")
 
 #Plot transformed CCBR vs LTRI with adjusted SD
-pdf(paste0(outdir,"scoreTransformationOutput.pdf"))
-plot(NA,type="n",
-	xlim=c(-.5,3),ylim=c(-.5,3),
-	xlab="Transformed RegSEQ Screen Fitness Score",ylab="BarSEQ Screen Fitness Score"
-)
-with(ltriVccbr,arrows(ccbr.trans.m-ccbr.trans.sd*5/2,ltri.score,ccbr.trans.m+ccbr.trans.sd*5/2,ltri.score,length=.01,code=3,angle=90))
-with(ltriVccbr,arrows(ccbr.trans.m,ltri.score-ltri.sd/2,ccbr.trans.m,ltri.score+ltri.sd/2,length=.01,code=3,angle=90))
-abline(h=0:1,v=0:1,col=c("firebrick3","chartreuse3"))
-invisible(dev.off())
+# pdf(paste0(outdir,"scoreTransformationOutput.pdf"))
+html$subsection("Scaling output")
+html$figure(function(){
+	plot(NA,type="n",
+		xlim=c(-.5,3),ylim=c(-.5,3),
+		xlab="Transformed RegSEQ Screen Fitness Score",ylab="BarSEQ Screen Fitness Score"
+	)
+	with(ltriVccbr,arrows(ccbr.trans.m-ccbr.trans.sd*5/2,ltri.score,ccbr.trans.m+ccbr.trans.sd*5/2,ltri.score,length=.01,code=3,angle=90))
+	with(ltriVccbr,arrows(ccbr.trans.m,ltri.score-ltri.sd/2,ccbr.trans.m,ltri.score+ltri.sd/2,length=.01,code=3,angle=90))
+	abline(h=0:1,v=0:1,col=c("firebrick3","chartreuse3"))
+},paste0(outdir,"scoreTransformationOutput"))
+# invisible(dev.off())
 
 
 ##########################################
@@ -185,5 +196,7 @@ joint.all <- rbind(joint.data,multi.muts[,-4])
 logger$info("Joining TileSEQ and BarSEQ data")
 
 write.table(joint.all,paste0(outdir,"compl_joint_results_UBE2I.csv"),sep=",",row.names=FALSE)
+
+html$shutdown()
 
 logger$info("Done.")

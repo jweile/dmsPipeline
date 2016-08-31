@@ -112,6 +112,7 @@ test.htmlfile <- function() {
 	html$header("Test")
 	html$section("Lorem ipsum dolor sit amet")
 	html$paragraph("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras vitae porttitor eros, ut condimentum lacus. Aliquam faucibus augue vel dolor sollicitudin ornare. Fusce id lectus vitae felis fermentum consequat.")
+	html$subsection("Lorem")
 	html$figure(function(){
 		plot(rnorm(10000,0,1),rnorm(10000,0,1))
 	},"htmltest/testfigure",7,5)

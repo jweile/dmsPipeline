@@ -4,6 +4,7 @@ source("lib/liblogging.R")
 source("lib/topoScatter.R")
 source("lib/cliargs.R")
 source("lib/genophenogram.R")
+source("lib/resultfile.R")
 
 
 library("hash")
@@ -21,6 +22,11 @@ geneName <- getArg("geneName",default="SUMO1")
 
 #Initialize logger
 logger <- new.logger(paste0(outdir,"impute_",geneName,".log"))
+
+#Set resultfile
+html <- new.resultfile(paste0(outdir,"results.html"))
+html$section(paste(geneName,"Imputation and regularization"))
+
 
 logger$info("Reading input")
 
@@ -422,9 +428,12 @@ testfeat <- testable[,-c(4,5,6)]
 testscores <- testable[,"score"]
 z <- randomForest(testfeat,testscores,importance=TRUE)
 
-pdf(paste0(outdir,"imputation_",geneName,"_variableImportance.pdf"))
-varImpPlot(z)
-invisible(dev.off())
+# pdf(paste0(outdir,"imputation_",geneName,"_variableImportance.pdf"))
+html$subsection("Feature importance")
+html$figure(function(){
+	varImpPlot(z)
+},paste0(outdir,"imputation_",geneName,"_variableImportance"))
+# invisible(dev.off())
 
 
 logger$info(" -> 10x cross validation")
@@ -460,50 +469,56 @@ rmsd <- sqrt(mean(sqds$sqd))
 # barplot(rmsds)
 logger$info(" -> Plotting cross-validation result")
 
-pdf(paste0(outdir,"imputation_",geneName,"_errorMap.pdf"),6*4,4)
-layout(cbind(1,2),widths=c(9.25,.75))
-#main plot
-op <- par(cex=.6,las=1,mar=c(5,4,0,0)+.1)
-plot(NA,type="n",
-	xlim=c(0,length(wt.aa)+1),ylim=c(0,length(aas)+1),axes=FALSE,
-	xlab="AA position",ylab="AA residue",main=""
-)
-axis(1,c(1,seq(5,160,5)))
-axis(2,at=1:20,labels=rev(aas))
-x <- sqds$pos
-y <- length(aas) - sapply(sqds$mut.aa,function(a)which(aas==a)) + 1
-colRamp <- colorRampPalette(c("green","red"))(11)
-col.idx <- sapply(round(1+10*sqrt(sqds$sqd)),function(x)min(c(x,11)))
-cols <- colRamp[col.idx]
-# cols <- colRamp[round(10*diffs/max(diffs))+1]
-rect(x-.5,y-.5,x+.5,y+.5,col=cols,border=NA)
-par(op)
-#legend
-op <- par(mar=c(5,0,1,4)+.1)
-plot(NA,type="n",xlim=c(0,1),ylim=c(0,11),axes=FALSE,xlab="",ylab="")
-rect(0,0:10,1,1:11,col=colRamp,border=NA)
-axis(4,at=c(.5,10.5),labels=c("0",">=1"))
-mtext("error",side=4,line=2)
-par(op)
-invisible(dev.off())
+# pdf(paste0(outdir,"imputation_",geneName,"_errorMap.pdf"),6*4,4)
+html$subsection("Squared deviation map")
+html$figure(function(){
+	layout(cbind(1,2),widths=c(9.25,.75))
+	#main plot
+	op <- par(cex=.6,las=1,mar=c(5,4,0,0)+.1)
+	plot(NA,type="n",
+		xlim=c(0,length(wt.aa)+1),ylim=c(0,length(aas)+1),axes=FALSE,
+		xlab="AA position",ylab="AA residue",main=""
+	)
+	axis(1,c(1,seq(5,160,5)))
+	axis(2,at=1:20,labels=rev(aas))
+	x <- sqds$pos
+	y <- length(aas) - sapply(sqds$mut.aa,function(a)which(aas==a)) + 1
+	colRamp <- colorRampPalette(c("green","red"))(11)
+	col.idx <- sapply(round(1+10*sqrt(sqds$sqd)),function(x)min(c(x,11)))
+	cols <- colRamp[col.idx]
+	# cols <- colRamp[round(10*diffs/max(diffs))+1]
+	rect(x-.5,y-.5,x+.5,y+.5,col=cols,border=NA)
+	par(op)
+	#legend
+	op <- par(mar=c(5,0,1,4)+.1)
+	plot(NA,type="n",xlim=c(0,1),ylim=c(0,11),axes=FALSE,xlab="",ylab="")
+	rect(0,0:10,1,1:11,col=colRamp,border=NA)
+	axis(4,at=c(.5,10.5),labels=c("0",">=1"))
+	mtext("error",side=4,line=2)
+	par(op)
+},paste0(outdir,"imputation_",geneName,"_errorMap"),6*4,4)
+# invisible(dev.off())
 
-if (geneName == "UBE2I") {
-	pdf(paste0(outdir,"imputation_",geneName,"_scoreVpred.pdf"),9,4)
-	#Plot growth score vs predicted score
-	with(sqds,topoScatter(score,pred,xlab="real score",ylab="predicted score",
-		main=sprintf("R = %.2f",cor(score,pred)),resolution=60
-	))
-	abline(v=0:1,h=0:1,col=c("firebrick3","darkolivegreen3"))
-	invisible(dev.off())
-} else {
-	pdf(paste0(outdir,"imputation_",geneName,"_scoreVpred.pdf"),7,4)
-	#Plot growth score vs predicted score
-	with(sqds,plot(score,pred,xlab="real score",ylab="predicted score",
-		main=sprintf("R = %.2f",cor(score,pred)),pch=20
-	))
-	abline(v=0:1,h=0:1,col=c("firebrick3","darkolivegreen3"))
-	invisible(dev.off())
-}
+html$subsection("Scores vs RandomForest predictions")
+html$figure(function(){
+	if (geneName == "UBE2I") {
+		# pdf(paste0(outdir,"imputation_",geneName,"_scoreVpred.pdf"),9,4)
+		#Plot growth score vs predicted score
+		with(sqds,topoScatter(score,pred,xlab="real score",ylab="predicted score",
+			main=sprintf("R = %.2f",cor(score,pred)),resolution=60
+		))
+		abline(v=0:1,h=0:1,col=c("firebrick3","darkolivegreen3"))
+		# invisible(dev.off())
+	} else {
+		# pdf(paste0(outdir,"imputation_",geneName,"_scoreVpred.pdf"),7,4)
+		#Plot growth score vs predicted score
+		with(sqds,plot(score,pred,xlab="real score",ylab="predicted score",
+			main=sprintf("R = %.2f",cor(score,pred)),pch=20
+		))
+		abline(v=0:1,h=0:1,col=c("firebrick3","darkolivegreen3"))
+		# invisible(dev.off())
+	}
+},paste0(outdir,"imputation_",geneName,"_scoreVpred"),if(geneName=="UBE2I") 9 else 7, 4)
 
 
 #############################
@@ -543,8 +558,13 @@ write.table(score.table,paste0(outdir,"imputed_regularized_",geneName,"_scores.c
 
 logger$info("Drawing complete genophenogram")
 
-pdf(paste0(outdir,"imputed_regularized_",geneName,"_genophenogram.pdf"),19,4)
-genophenogram(wt.aa,featable$pos,featable$mut.aa,score)
-invisible(dev.off())
+# pdf(paste0(outdir,"imputed_regularized_",geneName,"_genophenogram.pdf"),19,4)
+html$subsection("Regularized and Imputed Genophenogram")
+html$figure(function(){
+	genophenogram(wt.aa,featable$pos,featable$mut.aa,score)
+},paste0(outdir,"imputed_regularized_",geneName,"_genophenogram"),if(geneName=="UBE2I")19 else 16,4)
+# invisible(dev.off())
+
+html$shutdown()
 
 logger$info("Done.")
