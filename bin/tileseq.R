@@ -3,6 +3,7 @@
 # TileSEQ data                     #
 ####################################
 
+source("lib/resultfile.R")
 source("lib/libyogitools.R")
 source("lib/liblogging.R")
 source("lib/topoScatter.R")
@@ -20,6 +21,10 @@ geneName <- getArg("geneName",default="UBE2I")
 
 #Initialize logger
 logger <- new.logger(paste0(outdir,"tileseq-",geneName,".log"))
+
+#Set resultfile
+html <- new.resultfile(paste0(outdir,"results.html"))
+html$section(paste(geneName,"Complementation TileSEQ Data Analysis"))
 
 ##############
 # LOAD INPUT #
@@ -70,28 +75,34 @@ ccbr3$meanphi <-  apply(ccbr3[,c("phi1","phi2")],1,mean)
 logger$info("Plotting replicate correlation")
 
 #Correlation Dot-plot
-pdf(paste0(outdir,"tileSEQ_",geneName,"_phi_replicates.pdf"),5,5)
-with(ccbr3[ccbr3$minBC > 500,],topoScatter(phi1,phi2,
-	xlab=expression(phi[1]),ylab=expression(phi[2]),
-	resolution=50
-))
-invisible(dev.off())
+# pdf(paste0(outdir,"tileSEQ_",geneName,"_phi_replicates.pdf"),5,5)
+html$subsection("Replicate correlation")
+html$figure(function(){
+	with(ccbr3[ccbr3$minBC > 500,],topoScatter(phi1,phi2,
+		xlab=expression(phi[1]),ylab=expression(phi[2]),
+		resolution=50
+	))
+},paste0(outdir,"tileSEQ_",geneName,"_phi_replicates"),5,5)
+# invisible(dev.off())
 
 
 logger$info("Plotting Error Regularization W/O log transformation")
 
-pdf(paste0(outdir,"tileSEQ_",geneName,"_SDvPHI.pdf"),10,5)
-op <- par(mfrow=c(1,2))
-#Plot minBC vs SD
-with(ccbr3,topoScatter(minBC,sd+0.00001,log="xy",maxFreq=35,thresh=3,
-	resolution=40, xlab="Read depth (Millions)", ylab=expression(sigma)
-))
-#Plot score vs SD
-with(ccbr3[ccbr3$minBC > 500,],topoScatter(meanphi,sd,log="xy",pch=20,resolution=40,
-	xlab=expression(E(phi)),ylab=expression(sigma),maxFreq=35,thresh=3
-))
-par(op)
-invisible(dev.off())
+# pdf(paste0(outdir,"tileSEQ_",geneName,"_SDvPHI.pdf"),10,5)
+html$subsection("Modeling Error Prior without log transformation")
+html$figure(function(){
+	op <- par(mfrow=c(1,2))
+	#Plot minBC vs SD
+	with(ccbr3,topoScatter(minBC,sd+0.00001,log="xy",maxFreq=35,thresh=3,
+		resolution=40, xlab="Read depth (Millions)", ylab=expression(sigma)
+	))
+	#Plot score vs SD
+	with(ccbr3[ccbr3$minBC > 500,],topoScatter(meanphi,sd,log="xy",pch=20,resolution=40,
+		xlab=expression(E(phi)),ylab=expression(sigma),maxFreq=35,thresh=3
+	))
+	par(op)
+},paste0(outdir,"tileSEQ_",geneName,"_SDvPHI"),10,5)
+# invisible(dev.off())
 
 
 logger$info("Log transforming data")
@@ -107,18 +118,21 @@ ccbr.log$mean.lphi <- apply(ccbr.log[,c("lphi1","lphi2")],1,mean)
 
 logger$info("Plotting Error Regularization WITH log transformation")
 
-pdf(paste0(outdir,"tileSEQ_",geneName,"_errorRegularizationInput.pdf"),10,5)
-op <- par(mfrow=c(1,2))
-#Plot minBC vs SD
-with(ccbr.log,topoScatter(ccbr3$minBC,sd+0.00001,log="xy",maxFreq=35,thresh=3,
-	resolution=40, xlab="Read depth (Millions)", ylab=expression(sigma)
-))
-#Plot score vs SD
-with(ccbr.log[ccbr3$minBC > 500,],topoScatter(mean.lphi,sd,log="y",pch=20,resolution=40, 
-	xlab=expression(E(log[10](phi))),ylab=expression(sigma),maxFreq=35,thresh=3
-))
-par(op)
-invisible(dev.off())
+# pdf(paste0(outdir,"tileSEQ_",geneName,"_errorRegularizationInput.pdf"),10,5)
+html$subsection("Modeling Error Prior with log transformation")
+html$figure(function(){
+	op <- par(mfrow=c(1,2))
+	#Plot minBC vs SD
+	with(ccbr.log,topoScatter(ccbr3$minBC,sd+0.00001,log="xy",maxFreq=35,thresh=3,
+		resolution=40, xlab="Read depth (Millions)", ylab=expression(sigma)
+	))
+	#Plot score vs SD
+	with(ccbr.log[ccbr3$minBC > 500,],topoScatter(mean.lphi,sd,log="y",pch=20,resolution=40, 
+		xlab=expression(E(log[10](phi))),ylab=expression(sigma),maxFreq=35,thresh=3
+	))
+	par(op)
+},paste0(outdir,"tileSEQ_",geneName,"_errorRegularizationInput"),10,5)
+# invisible(dev.off())
 
 
 logger$info("Performing Error Regularization")
@@ -139,17 +153,20 @@ bayes.sd <- bnl(4,2,sdVpred[,"model"],sdVpred[,"empiric"])
 
 logger$info("Plotting Error Regularization Results")
 
-pdf(paste0(outdir,"tileSEQ_",geneName,"_errorRegularizationOutput.pdf"),10,5)
-op <- par(mfrow=c(1,2))
-topoScatter(sdVpred[,1]+0.0001,sdVpred[,2]+0.0001,log="xy",resolution=50,maxFreq=30,#pch=20,
-	xlab=expression("Model"~sigma),ylab=expression("Empiric"~sigma)
-)
-# plot(ccbr.log$sd,bayes.sd,pch=16,col=rgb(79,148,205,50,maxColorValue=255),xlim=c(0,.8),ylim=c(0,.8))
-topoScatter(ccbr.log$sd+0.0001,bayes.sd+0.0001,resolution=60,maxFreq=30,log="xy",
-	xlab=expression("Empiric"~sigma),ylab=expression("Bayesian Regularized"~sigma)
-)
-par(op)
-invisible(dev.off())
+# pdf(paste0(outdir,"tileSEQ_",geneName,"_errorRegularizationOutput.pdf"),10,5)
+html$subsection("Bayesian Regularization of Error")
+html$figure(function(){
+	op <- par(mfrow=c(1,2))
+	topoScatter(sdVpred[,1]+0.0001,sdVpred[,2]+0.0001,log="xy",resolution=50,maxFreq=30,#pch=20,
+		xlab=expression("Model"~sigma),ylab=expression("Empiric"~sigma)
+	)
+	# plot(ccbr.log$sd,bayes.sd,pch=16,col=rgb(79,148,205,50,maxColorValue=255),xlim=c(0,.8),ylim=c(0,.8))
+	topoScatter(ccbr.log$sd+0.0001,bayes.sd+0.0001,resolution=60,maxFreq=30,log="xy",
+		xlab=expression("Empiric"~sigma),ylab=expression("Bayesian Regularized"~sigma)
+	)
+	par(op)
+},paste0(outdir,"tileSEQ_",geneName,"_errorRegularizationOutput"),10,5)
+# invisible(dev.off())
 
 ccbr.log$bsd <- bayes.sd
 ccbr.log$minBC <- ccbr3$minBC
@@ -160,5 +177,7 @@ logger$info("Writing output")
 write.table(ccbr.log,paste0(outdir,"compl_tileSEQ_results_",geneName,".csv"),sep=",",row.names=FALSE)
 # write.table(ccbr.log,"ccbr_regularized_SUMO1.csv",sep=",",row.names=FALSE)
 # write.table(ccbr.log,"ccbr_regularized.csv",sep=",",row.names=FALSE)
+
+html$shutdown()
 
 logger$info("Done.")

@@ -5,6 +5,7 @@
 
 options(stringsAsFactors=FALSE)
 
+source("lib/resultfile.R")
 source("lib/libyogitools.R")
 source("lib/cliargs.R")
 source("lib/topoScatter.R")
@@ -15,6 +16,10 @@ outdir <- getArg("outdir",default="workspace/test/")
 
 #Init logger
 logger <- new.logger(paste0(outdir,"barseq-ts.log"))
+
+#Set resultfile
+html <- new.resultfile(paste0(outdir,"results.html"))
+html$section("UBE2I Complementation Timeseries BarSEQ Data Analysis")
 
 ##############
 # LOAD INPUT #
@@ -119,17 +124,20 @@ all.data$minCount <- apply(data.abs[all.data$id,which(with(sample.table, timepoi
 logger$info("Regularizing standard deviation")
 
 logger$info("--> Visualizing input")
-pdf(paste0(outdir,"compTS_errorRegularizationInput.pdf"),10,5)
-op <- par(mfrow=c(1,2))
-# with(all.data,plot(mean.cnfa,esd,log="y"))
-with(all.data,topoScatter(mean.cnfa,esd,log="y",resolution=50,
-	xlim=c(0.25,1.7),ylim=c(1e-4,0.7),
-	xlab="Cumulative fitness advantage",ylab="Standard deviation"))
-# with(all.data,plot(minCount,esd,log="xy"))
-with(all.data,topoScatter(minCount,esd,log="xy",resolution=50,
-	xlab="permissive Barcode Count",ylab="Standard deviation"))
-par(op)
-invisible(dev.off())
+# pdf(paste0(outdir,"compTS_errorRegularizationInput.pdf"),10,5)
+html$subsection("Modeling Error Prior")
+html$figure(function(){
+	op <- par(mfrow=c(1,2))
+	# with(all.data,plot(mean.cnfa,esd,log="y"))
+	with(all.data,topoScatter(mean.cnfa,esd,log="y",resolution=50,
+		xlim=c(0.25,1.7),ylim=c(1e-4,0.7),
+		xlab="Cumulative fitness advantage",ylab="Standard deviation"))
+	# with(all.data,plot(minCount,esd,log="xy"))
+	with(all.data,topoScatter(minCount,esd,log="xy",resolution=50,
+		xlab="permissive Barcode Count",ylab="Standard deviation"))
+	par(op)
+},paste0(outdir,"compTS_errorRegularizationInput"),10,5)
+# invisible(dev.off())
 
 logger$info("--> Calculating")
 splinemat <- data.frame(
@@ -146,14 +154,17 @@ bnl <- function(pseudo.n,n,model.sd,empiric.sd) {
 all.data$bsd <- bnl(6,3,sdVpred[,"model"],sdVpred[,"empiric"])
 
 logger$info("--> Visualizing output")
-pdf(paste0(outdir,"compTS_errorRegularizationOutput.pdf"),5,5)
-with(all.data,plot(esd,bsd,
-	pch=16,col=rgb(79,148,205,50,maxColorValue=255),
-	xlim=c(0,.8),ylim=c(0,.8),
-	xlab="Empirical Standard Deviation",
-	ylab="Regularized Standard Deviation"
-))
-invisible(dev.off())
+# pdf(paste0(outdir,"compTS_errorRegularizationOutput.pdf"),5,5)
+html$subsection("Bayesian Regularization of Error")
+html$figure(function(){
+	with(all.data,plot(esd,bsd,
+		pch=16,col=rgb(79,148,205,50,maxColorValue=255),
+		xlim=c(0,.8),ylim=c(0,.8),
+		xlab="Empirical Standard Deviation",
+		ylab="Regularized Standard Deviation"
+	))
+},paste0(outdir,"compTS_errorRegularizationOutput"),5,5)
+# invisible(dev.off())
 
 #####################
 # QUALITY FILTERING #
@@ -209,23 +220,26 @@ biorep.pairs <- do.call(rbind,tapply(good.data$score,good.data$mut,function(s) {
 	if (length(s) > 1) t(combn(s,2)) else NULL
 },simplify=FALSE))
 
-pdf(paste0(outdir,"compTS_replication.pdf"),10,5)
-op <- par(mfrow=c(1,2))
-topoScatter(
-	techrep.pairs[,1], techrep.pairs[,2],resolution=60, 
-	xlab="Replicate 1 fitness", ylab="Replicate 2 fitness",
-	main="Technical replication"
-)
-text(1,2,sprintf("R = %.02f",cor(techrep.pairs)[1,2]),srt=45)
+# pdf(paste0(outdir,"compTS_replication.pdf"),10,5)
+html$subsection("Replicate correlation")
+html$figure(function(){
+	op <- par(mfrow=c(1,2))
+	topoScatter(
+		techrep.pairs[,1], techrep.pairs[,2],resolution=60, 
+		xlab="Replicate 1 fitness", ylab="Replicate 2 fitness",
+		main="Technical replication"
+	)
+	text(1,2,sprintf("R = %.02f",cor(techrep.pairs)[1,2]),srt=45)
 
-topoScatter(biorep.pairs[,1],biorep.pairs[,2],resolution=60,
-	thresh=3,maxFreq=50,
-	xlab="Replicate 1 fitness", ylab="Replicate 2 fitness",
-	main="Biological replication"
-)
-text(.7,2,sprintf("R = %.02f",cor(biorep.pairs)[1,2]),srt=45)
-par(op)
-invisible(dev.off())
+	topoScatter(biorep.pairs[,1],biorep.pairs[,2],resolution=60,
+		thresh=3,maxFreq=50,
+		xlab="Replicate 1 fitness", ylab="Replicate 2 fitness",
+		main="Biological replication"
+	)
+	text(.7,2,sprintf("R = %.02f",cor(biorep.pairs)[1,2]),srt=45)
+	par(op)
+},paste0(outdir,"compTS_replication"),10,5)
+# invisible(dev.off())
 
 #################################
 # CALCULATE PER-MUTATION SCORES #
@@ -264,5 +278,6 @@ mtable <- as.df(tapply(1:nrow(good.data),good.data$mut,function(is) {
 logger$info("Writing mutation-wise output")
 write.table(mtable,paste0(outdir,"compl_timeseries_results_byMut.csv"),sep=",",row.names=FALSE)
 
+html$shutdown()
 
 logger$info("Done.")

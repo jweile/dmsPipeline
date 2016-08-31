@@ -1,10 +1,11 @@
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
-all: pickSpottingClones evaluateSpotting compensatory accCons
+all: pickSpottingClones evaluateSpotting compensatory accCons finalize
 
 #Create an output directory for this pipeline run
 outdir:
 	mkdir -p $(OUTDIR)
+	Rscript bin/resultCtrl.R outdir=$(OUTDIR) cmd=setup
 
 #Analyze the BarSEQ time series data from raw barcode counts
 barseqTS: outdir
@@ -53,3 +54,8 @@ evaluateSpotting: impute
 # interfacialness and conservation
 accCons: impute
 	Rscript bin/accCons.R outdir=$(OUTDIR)
+
+
+#Adds closing tags to the result HTML
+finalize: outdir
+	Rscript bin/resultCtrl.R outdir=$(OUTDIR) cmd=finalize
