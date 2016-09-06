@@ -2,6 +2,7 @@
 options(stringsAsFactors=FALSE)
 
 # source("lib/libyogitools.R")
+source("lib/resultfile.R")
 source("lib/liblogging.R")
 source("lib/cliargs.R")
 
@@ -10,6 +11,10 @@ source("lib/cliargs.R")
 outdir <- getArg("outdir",default="workspace/test/")
 infile <- getArg("infile",default="workspace/test/genetic_interactions.csv")
 distfile <- getArg("distfile",default="workspace/test/distanceMatrix_UBE2I.csv")
+
+#Set resultfile
+html <- new.resultfile(paste0(outdir,"results.html"))
+html$section("Compensatory Mutations")
 
 #Init logger
 logger <- new.logger(paste0(outdir,"compensatoryMut.log"))
@@ -55,23 +60,26 @@ compens <- gis[which(with(gis,epsilon > 0.2 & dist < 10)),]
 ################
 logger$info("Drawing figure")
 
-pdf(paste0(outdir,"compensatory.pdf"),5,5)
-op <- par(mar=c(5,5,4,1)+.1,las=1)
-with(gis,plot(epsilon,dist,
-	xlab=expression(epsilon[i][j]),
-	ylab=expression(scriptstyle(bgroup("||",list(C[alpha]^(i),C[alpha]^(j)),"||")[2])),
-	pch=16,col=rgb(79,148,205,100,maxColorValue=255),
-	main="Genetic interaction vs Residue distance",axes=FALSE,
-	ylim=c(0,50)
-))
-axis(1)
-axis(2,at=seq(0,50,10),labels=paste(seq(0,50,10),"Å"))
-# rect(0,10,3,-1,border="firebrick3",density=6,col="firebrick3",lty="dashed")
-rect(0.2,10,3,-1,col=rgb(200,20,20,50,maxColorValue=255),border="firebrick3",lty="dotted")
-text(1.3,4.5,"compensatory zone",col="firebrick3")
-with(compens,text(epsilon,dist,sub(",","-",dm),cex=.5,srt=30,pos=4))
-par(op)
-invisible(dev.off())
+# pdf(paste0(outdir,"compensatory.pdf"),5,5)
+html$subsection("Genetic interaction vs Residue distance")
+html$figure(function(){
+	op <- par(mar=c(5,5,4,1)+.1,las=1)
+	with(gis,plot(epsilon,dist,
+		xlab=expression(epsilon[i][j]),
+		ylab=expression(scriptstyle(bgroup("||",list(C[alpha]^(i),C[alpha]^(j)),"||")[2])),
+		pch=16,col=rgb(79,148,205,100,maxColorValue=255),
+		main="Genetic interaction vs Residue distance",axes=FALSE,
+		ylim=c(0,50)
+	))
+	axis(1)
+	axis(2,at=seq(0,50,10),labels=paste(seq(0,50,10),"Å"))
+	# rect(0,10,3,-1,border="firebrick3",density=6,col="firebrick3",lty="dashed")
+	rect(0.2,10,3,-1,col=rgb(200,20,20,50,maxColorValue=255),border="firebrick3",lty="dotted")
+	text(1.3,4.5,"compensatory zone",col="firebrick3")
+	with(compens,text(epsilon,dist,sub(",","-",dm),cex=.5,srt=30,pos=4))
+	par(op)
+},paste0(outdir,"compensatory"),5,5)
+# invisible(dev.off())
 
 detail <- function(i) {
 	vals <- c(WT=1,s1=compens[i,4],s2=compens[i,6],d=compens[i,2])
@@ -85,10 +93,15 @@ detail <- function(i) {
 	arrows(xs[,1],vals-ses/2,xs[,1],vals+ses/2,angle=90,length=0.05,code=3)
 }
 
-pdf(paste0(outdir,"compensatory_detail.pdf"),4,8)
-layout(rbind(1,2))
-detail(1)
-detail(2)
-invisible(dev.off())
+# pdf(paste0(outdir,"compensatory_detail.pdf"),4,8)
+html$subsection("Details")
+html$figure(function(){
+	layout(rbind(1,2))
+	detail(1)
+	detail(2)
+},paste0(outdir,"compensatory_detail"),4,8)
+# invisible(dev.off())
+
+html$shutdown()
 
 logger$info("Done.")

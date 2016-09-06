@@ -1,10 +1,15 @@
 
+source("lib/resultfile.R")
 source("lib/libpdb.R")
 source("lib/liblogging.R")
 source("lib/cliargs.R")
 
 #get output directory
 outdir <- getArg("outdir",default="workspace/test/")
+
+#Set resultfile
+html <- new.resultfile(paste0(outdir,"results.html"))
+html$section("Calculation of distance matrix")
 
 #Initialize logger
 logger <- new.logger(paste0(outdir,"distanceMatrix.log"))
@@ -42,31 +47,35 @@ dimnames(dmat) <- list(positions,positions)
 
 logger$info("Drawing figure")
 
-pdf(paste0(outdir,"distanceMatrix.pdf"))
-layout(cbind(1,2),widths=c(8,1.5))
-#draw distance map
-op <- par(mar=c(5,4,4,0)+.1)
-fire <- colorRampPalette(c(c("white","yellow","red","black")))(25)
-image(dmat,axes=FALSE,col=fire,xlab="AA position",ylab="AA position")
-labels <- 1:15*10
-at <- which(positions %in% labels)/length(positions)
-axis(1,at=at,labels=labels)
-axis(2,at=at,labels=labels)
-#draw legend
-par(mar=c(5,0,4,4)+.1)
-plot(0,type="n",xlim=0:1,ylim=c(0,25),axes=FALSE,xlab="",ylab="")
-rect(0,0:24,1,1:25,col=fire,border=NA)
-axis(4,at=seq(0.5,24.5,length.out=25),
-	labels=round(seq(min(dmat),max(dmat),length.out=25))
-)
-mtext(expression(C[alpha]~"distance (Å)"),side=4,line=3)
-par(op)
-invisible(dev.off())
+# pdf(paste0(outdir,"distanceMatrix.pdf"))
+html$figure(function(){
+	layout(cbind(1,2),widths=c(8,1.5))
+	#draw distance map
+	op <- par(mar=c(5,4,4,0)+.1)
+	fire <- colorRampPalette(c(c("white","yellow","red","black")))(25)
+	image(dmat,axes=FALSE,col=fire,xlab="AA position",ylab="AA position")
+	labels <- 1:15*10
+	at <- which(positions %in% labels)/length(positions)
+	axis(1,at=at,labels=labels)
+	axis(2,at=at,labels=labels)
+	#draw legend
+	par(mar=c(5,0,4,4)+.1)
+	plot(0,type="n",xlim=0:1,ylim=c(0,25),axes=FALSE,xlab="",ylab="")
+	rect(0,0:24,1,1:25,col=fire,border=NA)
+	axis(4,at=seq(0.5,24.5,length.out=25),
+		labels=round(seq(min(dmat),max(dmat),length.out=25))
+	)
+	mtext(expression(C[alpha]~"distance (Å)"),side=4,line=3)
+	par(op)
+}, paste0(outdir,"distanceMatrix"))
+# invisible(dev.off())
 
 #Output
 
 logger$info("Writing output to file.")
 
 write.table(dmat,paste0(outdir,"distanceMatrix_UBE2I.csv"),sep=",")
+
+html$shutdown()
 
 logger$info("Done.")

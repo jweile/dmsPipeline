@@ -53,7 +53,7 @@
 		<code><pre>make geneticInteractions finalize</pre></code>
 		Note, that you should always append the finalize goal when addressing individual goals, as this is required to produce a valid output HTML file.
 	</p>
-	<p>The goals are interdependent with each other. This means that when you execute a higher-ranking goal, its prerequisites will also be executed beforehand. For example, the imputation analysis is dependent on the results of the scaleAndJoin analysis, which in turn depends on the results of the barseq and tileseq analyses. Thus, when you call on the pipeline to perform the imputation, it will first execute the barseq, tileseq and scaleAndJoin goals before finally executing the desired imputaiton goal. The interdepence of all of the goals in the pipeline is shown in the figure below.</p>
+	<p>The goals are interdependent with each other. This means that when you execute a higher-ranking goal, its prerequisites will also be executed beforehand. For example, the imputation analysis is dependent on the results of the scaleAndJoin analysis, which in turn depends on the results of the barseq and tileseq analyses. Thus, when you call on the pipeline to perform the imputation, it will first execute the barseq, tileseq and scaleAndJoin goals before finally executing the desired imputation goal. The interdependence of all of the goals in the pipeline is shown in the figure below.</p>
 	<object data="final_pipeline.svg" type="image/svg+xml" style="width:8.5in"></object>
 	<p class="caption"><b>Figure 1:</b> A dependency graph of all the pipeline goals.</p>
 

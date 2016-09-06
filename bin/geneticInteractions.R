@@ -1,8 +1,11 @@
 options(stringsAsFactors=FALSE)
 
+
+source("lib/resultfile.R")
 source("lib/libyogitools.R")
 source("lib/liblogging.R")
 source("lib/cliargs.R")
+source("lib/topoScatter.R")
 
 library("hash")
 
@@ -10,6 +13,10 @@ library("hash")
 #Get output directory
 outdir <- getArg("outdir",default="workspace/test/")
 infile <- getArg("infile",default="workspace/test/compl_joint_results_UBE2I.csv")
+
+#Set resultfile
+html <- new.resultfile(paste0(outdir,"results.html"))
+html$section("Intragenic epistasis")
 
 #Init logger
 logger <- new.logger(paste0(outdir,"geneticInteractions.log"))
@@ -114,25 +121,28 @@ gis <- gis[order(abs(gis$epsilon),decreasing=TRUE),]
 #Volcano plot
 logger$info("Drawing volcano plot")
 
-pdf(paste0(outdir,"epistasis_volcano.pdf"),5,5)
-layout(rbind(1,2),heights=c(2,5))
-op <- par(mar=c(0,4,4,1)+.1,las=1)
-with(dm.data2,hist(
-	epsilon,breaks=20,
-	prob=TRUE,
-	xlab="",axes=FALSE,main="UBE2I Intragenic Epistasis",
-	col="gray",border=NA
-))
-axis(2)
-par(mar=c(5,4,0,1)+.1)
-with(dm.data2,plot(epsilon,-log10(q),pch=16,
-	col=rgb(79,148,205,80,maxColorValue=255),
-	xlab=expression(epsilon),ylab=expression(-log[10](q))
-))
-abline(h=-log10(.05),col="red",lty="dashed")
-text(-1.7,-log10(.05),"q = 0.05",col="red",pos=3)
-par(op)
-invisible(dev.off())
+# pdf(paste0(outdir,"epistasis_volcano.pdf"),5,5)
+html$figure(function(){
+	layout(rbind(1,2),heights=c(2,5))
+	op <- par(mar=c(0,4,4,1)+.1,las=1)
+	with(dm.data2,hist(
+		epsilon,breaks=20,
+		prob=TRUE,
+		xlab="",axes=FALSE,main="UBE2I Intragenic Epistasis",
+		col="gray",border=NA
+	))
+	axis(2)
+	par(mar=c(5,4,0,1)+.1)
+	with(dm.data2,plot(epsilon,-log10(q),
+		pch=16,	col=rgb(79,148,205,80,maxColorValue=255),
+		# resolution=60, thresh=3,
+		xlab=expression(epsilon),ylab=expression(-log[10](q))
+	))
+	abline(h=-log10(.05),col="red",lty="dashed")
+	text(-1.7,-log10(.05),"q = 0.05",col="red",pos=3)
+	par(op)
+}, paste0(outdir,"epistasis_volcano"),5,5)
+# invisible(dev.off())
 
 
 ###########
@@ -141,5 +151,7 @@ invisible(dev.off())
 
 logger$info("Writing results to file")
 write.table(gis,paste0(outdir,"genetic_interactions.csv"),sep=",",row.names=FALSE)
+
+html$shutdown()
 
 logger$info("Done.")
