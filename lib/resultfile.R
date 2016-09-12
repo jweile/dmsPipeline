@@ -35,9 +35,11 @@ new.resultfile <- function(htmlfile,append=TRUE) {
 		writeLines(paste0("<html>
 <head>
 	<title>",escape(title),"</title>
-	<style>
+	<style type=\"text/css\">
 	body {
 		font-family:Helvetica,sans-serif;
+		padding:1cm;
+		margin-bottom: 2in;
 	}
 	</style>
 </head>
@@ -69,7 +71,7 @@ new.resultfile <- function(htmlfile,append=TRUE) {
 	#filestub = the base of the filename (without extension)
 	#w,h = width and height in inches
 	#res = resolution (defaults to 100dpi)
-	figure <- function(draw,filestub,w=7,h=7,res=200) {
+	figure <- function(draw,filestub,w=7,h=7,res=100) {
 
 		pdffile <- paste0(filestub,".pdf")
 		pdf(pdffile,w,h)
@@ -81,12 +83,13 @@ new.resultfile <- function(htmlfile,append=TRUE) {
 		draw()
 		invisible(dev.off())
 
+		html.w <- if (w > 10) 10 else w
 		writeLines(paste0(
 			"<a href=\"",
 			(pdffile %relativeTo% .htmlfile),
 			"\" download><img src=\"",
 			(pngfile %relativeTo% .htmlfile),
-			"\" style=\"width:",w,"in; height:",h,"in;\"/></a>"
+			"\" style=\"width:",html.w,"in;\"/></a>"
 		),.con)
 	}
 
