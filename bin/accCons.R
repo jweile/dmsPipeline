@@ -4,6 +4,7 @@
 # and for core/surface/interface residues           #
 #####################################################
 
+source("lib/resultfile.R")
 source("lib/liblogging.R")
 source("lib/cliargs.R")
 
@@ -11,6 +12,10 @@ source("lib/cliargs.R")
 options(stringsAsFactors=FALSE)
 
 outdir <- getArg("outdir",default="workspace/test/")
+
+#Set resultfile
+html <- new.resultfile(paste0(outdir,"results.html"))
+html$section("Surface accessibility and conservation analysis")
 
 #Init logger
 logger <- new.logger(paste0(outdir,"accessibility.log"))
@@ -71,44 +76,48 @@ cons.groups <- list(
 
 logger$info("Drawing plot")
 
-pdf(paste0(outdir,"accessibilityAndConservation.pdf"),7.5,4)
-layout(cbind(1,2))
-xs <- boxplot(
-	acc.groups,
-	col=c("firebrick3","steelblue3","chartreuse3"),
-	ylab="fitness score",xlab="Residue accessibility",
-	ylim=c(-0.5,4)
-)
-coreSurf <- with(acc.groups,wilcox.test(core,surface,alternative="less"))
-if (coreSurf$p.value < 0.05) {
-	lines(c(1,1,3,3),c(3.4,3.5,3.5,3.4))
-	text(2,3.6,"*",cex=1.4)
-}
-ifSurf <- with(acc.groups,wilcox.test(interface,surface,alternative="less"))
-if (ifSurf$p.value < 0.05) {
-	lines(c(2,2,3,3),c(3,3.1,3.1,3))
-	text(2.5,3.2,"*",cex=1.4)
-}
+# pdf(paste0(outdir,"accessibilityAndConservation.pdf"),7.5,4)
+html$figure(function(){
+	layout(cbind(1,2))
+	xs <- boxplot(
+		acc.groups,
+		col=c("firebrick3","steelblue3","chartreuse3"),
+		ylab="fitness score",xlab="Residue accessibility",
+		ylim=c(-0.5,4)
+	)
+	coreSurf <- with(acc.groups,wilcox.test(core,surface,alternative="less"))
+	if (coreSurf$p.value < 0.05) {
+		lines(c(1,1,3,3),c(3.4,3.5,3.5,3.4))
+		text(2,3.6,"*",cex=1.4)
+	}
+	ifSurf <- with(acc.groups,wilcox.test(interface,surface,alternative="less"))
+	if (ifSurf$p.value < 0.05) {
+		lines(c(2,2,3,3),c(3,3.1,3.1,3))
+		text(2.5,3.2,"*",cex=1.4)
+	}
 
-boxplot(
-	cons.groups,
-	col=c("firebrick3","orange","gold1"),
-	ylab="fitness score",xlab="Evolutionary conservation",
-	ylim=c(-0.5,3.5)
-)
-lo.mid <- with(cons.groups,wilcox.test(low,medium,alternative="greater"))
-if (lo.mid$p.value < 0.05) {
-	y <- 3.15
-	lines(c(1,1,2,2),c(y-.1,y,y,y-.1))
-	text(1.5,y+.1,"*",cex=1.4)
-}
+	boxplot(
+		cons.groups,
+		col=c("firebrick3","orange","gold1"),
+		ylab="fitness score",xlab="Evolutionary conservation",
+		ylim=c(-0.5,3.5)
+	)
+	lo.mid <- with(cons.groups,wilcox.test(low,medium,alternative="greater"))
+	if (lo.mid$p.value < 0.05) {
+		y <- 3.15
+		lines(c(1,1,2,2),c(y-.1,y,y,y-.1))
+		text(1.5,y+.1,"*",cex=1.4)
+	}
 
-mid.hi <- with(cons.groups,wilcox.test(medium,high,alternative="greater"))
-if (mid.hi$p.value < 0.05) {
-	y <- 3
-	lines(c(2,2,3,3),c(y-.1,y,y,y-.1))
-	text(2.5,y+.1,"*",cex=1.4)
-}
-invisible(dev.off())
+	mid.hi <- with(cons.groups,wilcox.test(medium,high,alternative="greater"))
+	if (mid.hi$p.value < 0.05) {
+		y <- 3
+		lines(c(2,2,3,3),c(y-.1,y,y,y-.1))
+		text(2.5,y+.1,"*",cex=1.4)
+	}
+},paste0(outdir,"accessibilityAndConservation"),7.5,4)
+# invisible(dev.off())
+
+html$shutdown()
 
 logger$info("Done.")
