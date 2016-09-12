@@ -91,6 +91,7 @@ new.resultfile <- function(htmlfile,append=TRUE) {
 			(pngfile %relativeTo% .htmlfile),
 			"\" style=\"width:",html.w,"in;\"/></a>"
 		),.con)
+		flush(.con)
 	}
 
 	#close the file
