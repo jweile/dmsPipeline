@@ -10,7 +10,11 @@ new.resultfile <- function(htmlfile,append=TRUE) {
 	`%relativeTo%` <- function(file,povFile) {
 		fileElements <- strsplit(file,"/")[[1]]
 		povElements <- strsplit(povFile,"/")[[1]]
-		common <- max(which(sapply(1:length(povElements),function(i)fileElements[[i]]==povElements[[i]])))
+		if (fileElements[[1]]!=povElements[[1]]) {
+			common <- 0
+		} else {
+			common <- max(which(sapply(1:length(povElements),function(i)fileElements[[i]]==povElements[[i]])))
+		}
 		ups <- length(povElements)-common-1
 		if (ups > 0) {
 			paste(
@@ -94,6 +98,21 @@ new.resultfile <- function(htmlfile,append=TRUE) {
 		flush(.con)
 	}
 
+	link.data <- function(filename, iconfile="doc/table_icon.png") {
+		relfile <- filename %relativeTo% .htmlfile
+		shortfile <- sub(".*/","",filename)
+		writeLines(paste0(
+"<p>
+	<a href=\"",relfile,"\" style=\"vertical-align:top;\" download>
+		<img src=\"",(iconfile %relativeTo% .htmlfile),"\" style=\"width:18px\"/>
+		<span>&nbsp;</span>",
+		shortfile,
+	"</a>
+</p>"
+		),.con)
+		flush(.con)
+	}
+
 	#close the file
 	shutdown <- function() {
 		close(.con)
@@ -106,6 +125,7 @@ new.resultfile <- function(htmlfile,append=TRUE) {
 		subsection=subsection,
 		paragraph=paragraph,
 		figure=figure,
+		link.data=link.data,
 		shutdown=shutdown
 	)
 }
@@ -120,6 +140,7 @@ test.htmlfile <- function() {
 	html$figure(function(){
 		plot(rnorm(10000,0,1),rnorm(10000,0,1))
 	},"htmltest/testfigure",7,5)
+	html$link.data("foobar.txt")
 	html$closing()
 	html$shutdown()
 }
