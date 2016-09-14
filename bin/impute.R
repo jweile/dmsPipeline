@@ -368,7 +368,10 @@ featable$numCIA.res <- apply(
 
 
 logger$info(" -> Saving feature table")
-write.table(featable,paste0(outdir,geneName,"_featureMatrix.csv"),sep=",",row.names=FALSE)
+outfile <- paste0(outdir,geneName,"_featureMatrix.csv")
+write.table(featable,outfile,sep=",",row.names=FALSE)
+html$subsection("Feature table")
+html$link.data(outfile)
 
 
 
@@ -553,7 +556,10 @@ for (i in which(!is.na(featable$score))) {
 
 logger$info("Writing result to file.")
 
-write.table(score.table,paste0(outdir,"imputed_regularized_",geneName,"_scores.csv"),sep=",",row.names=FALSE)
+outfile <- paste0(outdir,"imputed_regularized_",geneName,"_scores.csv")
+write.table(score.table,outfile,sep=",",row.names=FALSE)
+html$subsection("Output")
+html$link.data(outfile)
 
 
 logger$info("Drawing complete genophenogram")

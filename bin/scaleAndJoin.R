@@ -133,7 +133,8 @@ ccbr.all.trans <- t(apply(ccbr[,-1],1,function(row) {
 }))
 ccbr <- cbind(ccbr,score=ccbr.all.trans)
 
-write.table(ccbr,paste0(outdir,"compl_tileSEQ_results_UBE2I_transformed.csv"),sep=",",row.names=FALSE)
+ub.outfile <- paste0(outdir,"compl_tileSEQ_results_UBE2I_transformed.csv")
+write.table(ccbr,ub.outfile,sep=",",row.names=FALSE)
 
 
 #Load and transform SUMO data
@@ -145,7 +146,12 @@ sumo.trans <- t(apply(sumo[,-1],1,function(row) {
 sumo <- cbind(sumo,score=sumo.trans)
 
 #Write results for SUMO1
-write.table(sumo,paste0(outdir,"compl_tileSEQ_results_SUMO1_transformed.csv"),sep=",",row.names=FALSE)
+sumo.outfile <- paste0(outdir,"compl_tileSEQ_results_SUMO1_transformed.csv")
+write.table(sumo,sumo.outfile,sep=",",row.names=FALSE)
+
+html$subsection("Transformed data")
+html$link.data(ub.outfile)
+html$link.data(sumo.outfile)
 
 
 ####################
@@ -195,7 +201,11 @@ joint.all <- rbind(joint.data,multi.muts[,-4])
 #########################
 logger$info("Joining TileSEQ and BarSEQ data")
 
-write.table(joint.all,paste0(outdir,"compl_joint_results_UBE2I.csv"),sep=",",row.names=FALSE)
+outfile <- paste0(outdir,"compl_joint_results_UBE2I.csv")
+write.table(joint.all,outfile,sep=",",row.names=FALSE)
+
+html$subsection("Joined data")
+html$link.dat(outfile)
 
 html$shutdown()
 

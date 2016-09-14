@@ -284,6 +284,7 @@ logger$info("Writing scores to file")
 
 outfile <- paste0(outdir,"y2h_scores.csv")
 write.table(good.data,outfile,sep=",")
+html$subsection("Output")
 html$link.data(outfile)
 
 html$shutdown()

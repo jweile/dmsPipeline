@@ -173,8 +173,11 @@ ccbr.log$minBC <- ccbr3$minBC
 
 
 logger$info("Writing output")
+outfile <- paste0(outdir,"compl_tileSEQ_results_",geneName,".csv")
+write.table(ccbr.log,outfile,sep=",",row.names=FALSE)
+html$subsection("Output")
+html$link.data(outfile)
 
-write.table(ccbr.log,paste0(outdir,"compl_tileSEQ_results_",geneName,".csv"),sep=",",row.names=FALSE)
 # write.table(ccbr.log,"ccbr_regularized_SUMO1.csv",sep=",",row.names=FALSE)
 # write.table(ccbr.log,"ccbr_regularized.csv",sep=",",row.names=FALSE)
 

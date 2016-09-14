@@ -150,7 +150,10 @@ html$figure(function(){
 ###########
 
 logger$info("Writing results to file")
-write.table(gis,paste0(outdir,"genetic_interactions.csv"),sep=",",row.names=FALSE)
+outfile <- paste0(outdir,"genetic_interactions.csv")
+write.table(gis,outfile,sep=",",row.names=FALSE)
+html$subsection("Output")
+html$link.data(outfile)
 
 html$shutdown()
 

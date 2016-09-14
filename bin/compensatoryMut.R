@@ -46,7 +46,10 @@ gis$dist <- apply(mutpos,1,function(x) {
 })
 
 logger$info("Saving integrated data table")
-write.table(gis,paste0(outdir,"gi+dist.csv"),sep=",",row.names=FALSE)
+outfile <- paste0(outdir,"gi+dist.csv")
+write.table(gis,outfile,sep=",",row.names=FALSE)
+html$subsection("Output")
+html$link.data(outfile)
 
 ###############
 # FILTER DATA #

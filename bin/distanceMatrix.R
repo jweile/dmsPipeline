@@ -74,7 +74,10 @@ html$figure(function(){
 
 logger$info("Writing output to file.")
 
-write.table(dmat,paste0(outdir,"distanceMatrix_UBE2I.csv"),sep=",")
+outfile <- paste0(outdir,"distanceMatrix_UBE2I.csv")
+write.table(dmat,outfile,sep=",")
+html$subsection("Output")
+html$link.data(outfile)
 
 html$shutdown()
 

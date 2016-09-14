@@ -4,6 +4,7 @@
 ####################################
 
 # source("lib/libyogitools.R")
+source("lib/resultfile.R")
 source("lib/liblogging.R")
 source("lib/cliargs.R")
 # library("hash")
@@ -12,6 +13,10 @@ options(stringsAsFactors=FALSE)
 
 #get output directory
 outdir <- getArg("outdir",default="workspace/test/")
+
+#Set resultfile
+html <- new.resultfile(paste0(outdir,"results.html"))
+html$section("Pick spotting assay clones")
 
 #Initialize logger
 logger <- new.logger(paste0(outdir,"pickSpottingClones.log"))
@@ -91,6 +96,10 @@ out <- data.frame(
 	score=c(rep(NA,length(unrepresented)),spectrum.scores)
 )
 
-write.table(out,paste0(outdir,"picked_spottingAssay_clones.csv"),sep=",",row.names=FALSE)
+outfile <- paste0(outdir,"picked_spottingAssay_clones.csv")
+write.table(out,outfile,sep=",",row.names=FALSE)
+html$link.data(outfile)
+
+html$shutdown()
 
 logger$info("Done.")

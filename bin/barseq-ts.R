@@ -199,7 +199,10 @@ good.data$score.bsd <- good.data$bsd / nw.scale
 #########################
 logger$info("Writing per-clone output")
 
-write.table(good.data,paste0(outdir,"compl_timeseries_results_byClone.csv"),sep=",",row.names=FALSE)
+outfile <- paste0(outdir,"compl_timeseries_results_byClone.csv")
+write.table(good.data,outfile,sep=",",row.names=FALSE)
+html$subsection("Per-clone scores")
+html$link.data(outfile)
 
 
 
@@ -276,7 +279,10 @@ mtable <- as.df(tapply(1:nrow(good.data),good.data$mut,function(is) {
 }))
 
 logger$info("Writing mutation-wise output")
-write.table(mtable,paste0(outdir,"compl_timeseries_results_byMut.csv"),sep=",",row.names=FALSE)
+outfile <- paste0(outdir,"compl_timeseries_results_byMut.csv")
+write.table(mtable,outfile,sep=",",row.names=FALSE)
+html$subsection("Per-mutation scores")
+html$link.data(outfile)
 
 html$shutdown()
 
