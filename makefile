@@ -1,6 +1,6 @@
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
-all: pickSpottingClones evaluateSpotting compensatory accCons finalize
+all: barseqY2H pickSpottingClones evaluateSpotting compensatory accCons finalize
 
 #Create an output directory for this pipeline run
 outdir:
@@ -15,6 +15,10 @@ barseqTS: outdir
 tileseq: outdir
 	Rscript bin/tileseq.R outdir=$(OUTDIR) infile=input/raw_counts_SUMO1_tileseq.tsv geneName=SUMO1
 	Rscript bin/tileseq.R outdir=$(OUTDIR) infile=input/raw_counts_UBE2I_tileseq.tsv geneName=UBE2I
+
+#Analyze the BarSEQ time series data from raw barcode counts
+barseqY2H: outdir
+	Rscript bin/barseq-y2h.R outdir=$(OUTDIR)
 
 #Re-scale the TileSEQ data to match the BarSEQ scale and join the datasets
 scaleAndJoin: barseqTS tileseq
