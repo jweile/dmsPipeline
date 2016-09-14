@@ -28,6 +28,16 @@ html <- new.resultfile(paste0(outdir,"results.html"))
 html$section(paste(geneName,"Imputation and regularization"))
 
 
+#A file that contains a set of mutations that should be excluded from training
+# so their imputation results can be evaluated against spotting assays
+ctrlSetFile <- getArg("ctrlSet",default=NA)
+if (!is.na(ctrlSetFile)) {
+	logger$warn("Control set exclusion enabled!")
+	ctrlSet <- scan(ctrlSetFile,what="character")
+} else {
+	ctrlSet <- character()
+}
+
 logger$info("Reading input")
 
 screen.data <- read.csv(infile)
@@ -380,7 +390,7 @@ html$link.data(outfile)
 ############################################
 # logger$info("Calculating Imputation baseline")
 
-testable <- featable[!is.na(featable$score),]
+testable <- featable[!is.na(featable$score) & !(featable$mut %in% ctrlSet),]
 
 
 # #Linear regression based on positional average, multimutant and multiplicative numbers

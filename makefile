@@ -28,7 +28,7 @@ scaleAndJoin: barseqTS tileseq
 # and regularize poorly measured data points
 impute: scaleAndJoin
 	Rscript bin/impute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_joint_results_UBE2I.csv \
-		geneName=UBE2I
+		geneName=UBE2I ctrlSet=res/UBE2I_imputationControl.txt
 	Rscript bin/impute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_tileSEQ_results_SUMO1_transformed.csv \
 		geneName=SUMO1
 

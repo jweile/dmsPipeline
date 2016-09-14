@@ -125,7 +125,9 @@ html$figure(function(){
 	})
 
 	#IMPUTED SCORES
-	imputed.only <- joint.imp[with(joint.imp,is.na(screen.score) & !(giImputeAvail | mmAverageAvail)),]
+	# imputed.only <- joint.imp[with(joint.imp,is.na(screen.score) & !(giImputeAvail | mmAverageAvail)),]
+	impctrl <- with(spotting,mut[category=="imputation" & Sanger])
+	imputed.only <- joint.imp[with(joint.imp,(mut %in% impctrl) & !(giImputeAvail | mmAverageAvail)),]
 	inner.ids <- intersect(names(spottingByMut),imputed.only$mut)
 	inner <- data.frame(
 		spotting=spottingByMut[inner.ids],
@@ -248,7 +250,7 @@ html$figure(function(){
 	text(0.5,0.5,sprintf("AUPRC = %.02f",auprc(rd)))
 
 	#INFERRED SCORES
-	inferred.only <- joint.imp[with(joint.imp,is.na(screen.score) & (posAverageAvail | mmAverageAvail)),]
+	inferred.only <- joint.imp[with(joint.imp,is.na(screen.score) & (giImputeAvail | mmAverageAvail)),]
 	inner.ids <- intersect(names(spottingByMut),inferred.only$mut)
 	inner <- data.frame(
 		spotting=spottingByMut[inner.ids],
