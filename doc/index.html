@@ -13,6 +13,13 @@
 		vertical-align: top;
 		text-align: justify;
 	}
+	th {
+		background: #eeeeee;
+	}
+	table {
+		border: 1px dotted gray;
+		padding: 0.5ex;
+	}
 	pre {
 		background-color: #eeeeee;
 		border: 1px dashed gray;
@@ -46,7 +53,7 @@ q()</pre></code>
 		<tr><td><code>scaleAndJoin</code></td><td>Re-scale the TileSEQ data to match the BarSEQ scale and join the datasets</td></tr>
 		<tr><td><code>impute</code></td><td>Build a feature table and then use RandomForest prediction to impute missing data and regularize poorly measured data points</td></tr>
 		<tr><td><code>geneticInteractions</code></td><td>Use double-mutant information to detect intragenic epistasis</td></tr>
-		<tr><td><code>compensatory</code></td><td>Use intragenic epistasis and C_alpha distances to find candidate compensatory relationships</td></tr>
+		<tr><td><code>compensatory</code></td><td>Use intragenic epistasis and C<sub>&alpha;</sub> distances to find candidate compensatory relationships</td></tr>
 		<tr><td><code>pickSpottingClones</code></td><td>Pick a set of clones to be tested in a manual spotting assay</td></tr>
 		<tr><td><code>evaluateSpotting</code></td><td>Compare the results of the manual spotting assay to the results of the previous pipeline steps (barseq, tileseq, impute, etc)</td></tr>
 		<tr><td><code>accCons</code></td><td>Plot the relationship between mutant fitness and surface accessibility, interfacialness and conservation</td></tr>
