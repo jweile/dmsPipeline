@@ -21,7 +21,7 @@ logger <- new.logger(paste0(outdir,"findInterfaces.log"))
 
 #Set resultfile
 html <- new.resultfile(paste0(outdir,"results.html"))
-html$section("UBE2I Y2H BarSEQ analysis")
+html$section("Finding interaction interfaces")
 
 
 logger$info("Reading input")
