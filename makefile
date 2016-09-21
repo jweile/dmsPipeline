@@ -59,6 +59,8 @@ evaluateSpotting: impute
 accCons: impute
 	Rscript bin/accCons.R outdir=$(OUTDIR)
 
+findInterfaces: barseqY2H impute
+	Rscript bin/findInterfaces.R outdir=$(OUTDIR)
 
 #Adds closing tags to the result HTML
 finalize: outdir

@@ -7,6 +7,7 @@ source("lib/resultfile.R")
 source("lib/liblogging.R")
 source("lib/libyogitools.R")
 source("lib/cliargs.R")
+source("lib/topoScatter.R")
 
 library("hash")
 options(stringsAsFactors=FALSE)
@@ -252,7 +253,9 @@ html$figure(function(){
 		abline(v=wt.lfc,col="darkolivegreen3")
 		abline(v=median(wt.lfc,na.rm=TRUE),col="darkolivegreen3",lwd=5,lty="dashed")
 		abline(v=median(null.lfc),col="firebrick3",lwd=5,lty="dashed")
-		good.data[,paste(ia,"i.score",sep=".")] <<- (good.data[,paste(ia,"lfc",sep=".")] - median(null.lfc))/(median(wt.lfc)-median(null.lfc))
+		nw.scale <- (median(wt.lfc)-median(null.lfc))
+		good.data[,paste(ia,"i.score",sep=".")] <<- (good.data[,paste(ia,"lfc",sep=".")] - median(null.lfc)) / nw.scale
+		good.data[,paste(ia,"i.score.bsd",sep=".")] <<- good.data[,paste(ia,"bsd",sep=".")] / nw.scale
 		#TODO: Also re-scale stdev
 	}))
 },paste0(outdir,"y2h_wmscores"))
@@ -279,13 +282,117 @@ html$figure(function(){
 	par(op)
 },paste0(outdir,"y2h_biorep"))
 
+#################################
+# Calculate mutation-wise scores
+#################################
+
+logger$info("Calculating mutation-wise scores")
+
+join.datapoints <- function(ms,sds) {
+	ws <- (1/sds)/sum(1/sds) #weights
+	mj <- sum(ws*ms) #joint mean
+	vj <- sum(ws*(sds^2+ms^2))-mj^2 #joint variance
+	c(mj=mj,sj=sqrt(vj))
+}
+
+mtables <- lapply(interactors, function(ia) {
+	as.df(tapply(1:nrow(good.data),good.data$mut,function(is) {
+		if (length(is) == 1) {
+			return(
+				list(mut=good.data$mut[is],
+					score=good.data[is,paste0(ia,".i.score")],
+					sd=good.data[is,paste0(ia,".i.score.bsd")]#,
+					# medBC=good.data[is,paste0(ia,".medBC")]
+				)
+			)
+		} else {#if there's more than one clone for this genotype
+			scores <- good.data[is,paste0(ia,".i.score")]
+			sds <- good.data[is,paste0(ia,".i.score.bsd")]
+			# medBCs <- good.data[is,paste0(ia,".medBC")]
+
+			nas <- is.na(scores) | is.na(sds)
+			scores <- scores[!nas]
+			sds <- sds[!nas]
+			# medBCs <- medBCs[!nas]
+
+			j <- join.datapoints(scores,sds)
+			# se <- j[["sj"]]/sqrt(3*length(scores))
+
+			return(
+				list(mut=good.data$mut[is[[1]]],
+					score=j[["mj"]],
+					sd=j[["sj"]]#,
+					# medBC=median(medBCs)
+				)
+			)
+		}
+	}))
+})
+mtable <- cbind(mut=mtables[[1]][,1],do.call(cbind,lapply(mtables,function(x)x[,-1])))
+colnames(mtable) <- c("mut",do.call(c,lapply(interactors,function(ia)paste0(ia,c(".score",".sd")))))
+
+
+#############################################
+#compare different interactors to each other
+#############################################
+
+hqset <- mtable[with(mtable,!is.na(SATB1.sd) & !is.na(SUMO1.sd) & !is.na(ZBED1.sd) & !is.na(RNF40.sd)),]
+hqset <- hqset[with(hqset,SATB1.sd < 0.2 & SUMO1.sd < 0.2 & ZBED1.sd < 0.2 & RNF40.sd < 0.2),]
+
+logger$info("Comparing different interactors")
+
+html$subsection("Comparison of interactors")
+html$figure(function(){
+	op <- par(mfrow=c(2,3))
+	with(hqset,{
+		topoScatter(SATB1.score,ZBED1.score,main="SATB1 vs ZBED1",
+			xlab="SATB1 interaction score",ylab="ZBED1 interaction score",res=60,maxFreq=50)
+		abline(h=0:1,v=0:1,col=c("firebrick3","chartreuse3"))
+		text(0.4,0.6,sprintf("SCC = %.2f",cor(SATB1.score,ZBED1.score,method="spearman")),srt=45)
+		topoScatter(SATB1.score,SUMO1.score,main="SATB1 vs SUMO1",
+			xlab="SATB1 interaction score",ylab="SUMO1 interaction score",res=60,maxFreq=50)
+		abline(h=0:1,v=0:1,col=c("firebrick3","chartreuse3"))
+		text(0.4,0.6,sprintf("SCC = %.2f",cor(SATB1.score,SUMO1.score,method="spearman")),srt=45)
+		topoScatter(SATB1.score,RNF40.score,main="SATB1 vs RNF40",
+			xlab="SATB1 interaction score",ylab="RNF40 interaction score",res=60,maxFreq=50)
+		abline(h=0:1,v=0:1,col=c("firebrick3","chartreuse3"))
+		text(0.4,0.6,sprintf("SCC = %.2f",cor(SATB1.score,RNF40.score,method="spearman")),srt=45)
+		topoScatter(ZBED1.score,SUMO1.score,main="ZBED1 vs SUMO1",
+			xlab="ZBED1 interaction score",ylab="SUMO1 interaction score",res=60,maxFreq=50)
+		abline(h=0:1,v=0:1,col=c("firebrick3","chartreuse3"))
+		text(0.4,0.6,sprintf("SCC = %.2f",cor(ZBED1.score,SUMO1.score,method="spearman")),srt=45)
+		topoScatter(SUMO1.score,RNF40.score,main="SUMO1 vs RNF40",
+			xlab="SUMO1 interaction score",ylab="RNF40 interaction score",res=60,maxFreq=50)
+		abline(h=0:1,v=0:1,col=c("firebrick3","chartreuse3"))
+		text(0.6,0.4,sprintf("SCC = %.2f",cor(SUMO1.score,RNF40.score,method="spearman")),srt=45)
+		topoScatter(ZBED1.score,RNF40.score,main="ZBED1 vs RNF40",
+			xlab="ZBED1 interaction score",ylab="RNF40 interaction score",res=60,maxFreq=50)
+		abline(h=0:1,v=0:1,col=c("firebrick3","chartreuse3"))
+		text(0.3,0.7,sprintf("SCC = %.2f",cor(ZBED1.score,RNF40.score,method="spearman")),srt=45)
+	})
+	par(op)
+},paste0(outdir,"y2h_interactorComparison"),10,7)
+
+# apply(combn(interactors,2),2,function(ias) {
+# 	s1 <- hqset[,paste0(ias[[1]],".score")]
+# 	s2 <- hqset[,paste0(ias[[2]],".score")]
+# 	topoScatter(s1,s2,main=paste(ias,collapse=" vs "),
+# 		xlab=paste(ias[[1]]"interaction score"),
+# 		ylab=paste(ias[[2]]"interaction score"),
+# 		res=60,maxFreq=50)
+# 	abline(h=0:1,v=0:1,col=c("firebrick3","chartreuse3"))
+# 	text(0.4,0.6,sprintf("SCC = %.2f",cor(s1,s2,method="spearman")),srt=45)
+# })
 
 logger$info("Writing scores to file")
 
-outfile <- paste0(outdir,"y2h_scores.csv")
-write.table(good.data,outfile,sep=",")
+outfile.clones <- paste0(outdir,"y2h_scores_perClone.csv")
+outfile.muts <- paste0(outdir,"y2h_scores_perMut.csv")
+write.table(good.data,outfile.clones,sep=",")
+write.table(mtable,outfile.muts,sep=",",row.names=FALSE)
 html$subsection("Output")
-html$link.data(outfile)
+html$link.data(outfile.clones)
+html$link.data(outfile.muts)
 
 html$shutdown()
 
