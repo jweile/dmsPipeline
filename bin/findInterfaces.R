@@ -8,6 +8,7 @@ source("lib/liblogging.R")
 source("lib/libyogitools.R")
 source("lib/cliargs.R")
 source("lib/topoScatter.R")
+source("lib/pymolCol.R")
 
 library("hash")
 options(stringsAsFactors=FALSE)
@@ -32,6 +33,8 @@ rownames(compl) <- compl$mut
 
 #remove multi-mutants
 data <- y2h[regexpr(",",y2h$mut) < 0,]
+#remove controls
+data <- data[-which(data$mut %in% c("null","WT","longdel","longdup")),]
 
 data$compl.score <- compl[data$mut,"joint.score"]
 data$compl.sd <- compl[data$mut,"joint.sd"]
@@ -91,7 +94,35 @@ close(con)
 html$subsection("Interface candidates")
 html$link.data(outfile)
 
+
+logger$info("Colorizing structures")
+
+#Make colored structure
+data$pos <- as.integer(with(data,substr(mut,2,nchar(mut)-1)))
+
+outfiles <- sapply(interactors,function(ia) {
+	outfile <- paste0(outdir,"y2h_pymol_colors_",ia,".txt")
+	pycol <- new.pymol.colorizer(outfile)
+	pycol$define.colors()
+
+	iasc <- paste0(ia,".score")
+	iasd <- paste0(ia,".sd")
+	is <- which(!is.na(data[,iasc]) & !is.na(data[,iasd]) & 
+		data[,iasd] > 0 & data[,iasd] < 0.2
+	)
+	iadata <- data[is,c("mut",iasc,"pos")]
+	posmed <- tapply(iadata[,2],iadata[,3],median)
+	
+	pycol$colorize(cbind(index=1:159,fitness=posmed[as.character(1:159)]))
+
+	pycol$close()
+
+	outfile
+})
+
+html$subsection("Structure Colorizations")
+invisible(lapply(outfiles, html$link.data))
+
 html$shutdown()
 
 logger$info("Done!")
-
