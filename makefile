@@ -1,6 +1,6 @@
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
-all: barseqY2H pickSpottingClones evaluateSpotting compensatory accCons finalize
+all: evaluateSpotting colorizeStructure findInterfaces compensatory accCons yeastResidues finalize
 
 #Create an output directory for this pipeline run
 outdir:
@@ -51,7 +51,7 @@ pickSpottingClones: scaleAndJoin
 
 #Compare the results of the manual spotting assay to the results of the
 # previous pipeline steps (barseq, tileseq, impute, etc)
-evaluateSpotting: impute
+evaluateSpotting: impute pickSpottingClones
 	Rscript bin/evaluateSpotting.R outdir=$(OUTDIR)
 
 #Plot the relationship between mutant fitness and surface accessibility,
@@ -59,8 +59,17 @@ evaluateSpotting: impute
 accCons: impute
 	Rscript bin/accCons.R outdir=$(OUTDIR)
 
+colorizeStructure: impute
+	Rscript bin/colorizeStructure.R outdir=$(OUTDIR) \
+		infile=$(OUTDIR)imputed_regularized_UBE2I_scores.csv geneName=UBE2I
+	Rscript bin/colorizeStructure.R outdir=$(OUTDIR) \
+		infile=$(OUTDIR)imputed_regularized_SUMO1_scores.csv geneName=SUMO1
+
 findInterfaces: barseqY2H impute
 	Rscript bin/findInterfaces.R outdir=$(OUTDIR)
+
+yeastResidues: impute
+	Rscript bin/yeastResidues.R outdir=$(OUTDIR)
 
 #Adds closing tags to the result HTML
 finalize: outdir
