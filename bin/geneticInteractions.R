@@ -145,6 +145,44 @@ html$figure(function(){
 # invisible(dev.off())
 
 
+################
+# MATRIX PLOT  #
+################
+
+gimat <- matrix(0,nrow=160,ncol=160)
+for (i in 1:nrow(gis)) {
+	muts <- strsplit(gis$dm[[i]],",")[[1]]
+	pos <- as.integer(substr(muts,2,nchar(muts)-1))
+	gimat[pos[[1]],pos[[2]]] <- gis$epsilon[[i]]
+	gimat[pos[[2]],pos[[1]]] <- gis$epsilon[[i]]
+}
+
+html$figure(function(){
+	layout(cbind(1,2),widths=c(8,2))
+	op <- par(mar=c(5,4,4,0)+.1)
+	colramp <- colorRampPalette(c("blue","white","red"))(15)
+	image(
+		gimat,
+		zlim=c(-2.5,2.5),
+		col=colramp,
+		axes=FALSE,xlab="AA pos",ylab="AA pos"
+	)
+	#2-35, 36-71, 72-105, 106-142, 143-158
+	starts <- c(2,36,72,106,143)/160
+	stops <- c(35,71,105,142,158)/160
+	rect(starts,starts,stops,stops,border="gray",lty="dashed")
+	ticks <- c(1,seq(10,160,10))
+	axis(1,at=ticks/160,labels=ticks)
+	axis(2,at=ticks/160,labels=ticks)
+	op <- par(mar=c(5,1,4,4)+.1)
+	plot(0,type="n",axes=FALSE,xlim=c(0,1),ylim=c(0,15),xlab="",ylab="")
+	rect(0,0:14,1,1:15,col=colramp,border=NA)
+	axis(4,at=c(0.5,7.5,14.5),labels=c(-2.5,0,2.5))
+	mtext(expression(epsilon),side=4,line=3)
+	par(op)
+}, paste0(outdir,"epistasis_matrix"),7,7)
+
+
 ###########
 # OUTPUT  #
 ###########
