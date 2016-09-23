@@ -71,6 +71,9 @@ findInterfaces: barseqY2H impute
 yeastResidues: impute
 	Rscript bin/yeastResidues.R outdir=$(OUTDIR)
 
+codonPref: scaleAndJoin
+	Rscript bin/codonPref.R outdir=$(OUTDIR)
+
 #Adds closing tags to the result HTML
 finalize: outdir
 	Rscript bin/resultCtrl.R outdir=$(OUTDIR) cmd=finalize
