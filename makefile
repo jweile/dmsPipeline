@@ -53,6 +53,7 @@ pickSpottingClones: scaleAndJoin
 # previous pipeline steps (barseq, tileseq, impute, etc)
 evaluateSpotting: impute pickSpottingClones
 	Rscript bin/evaluateSpotting.R outdir=$(OUTDIR)
+	Rscript bin/spottingDetail.R outdir=$(OUTDIR) imgdir=~/projects/spotting/complImg/final
 
 #Plot the relationship between mutant fitness and surface accessibility,
 # interfacialness and conservation
