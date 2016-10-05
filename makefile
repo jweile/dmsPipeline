@@ -1,6 +1,6 @@
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
-all: evaluateSpotting colorizeStructure findInterfaces compensatory accCons yeastResidues finalize
+all: evaluateSpotting colorizeStructure findInterfaces compensatory accCons yeastResidues codonPref subsampling finalize
 
 #Create an output directory for this pipeline run
 outdir:
@@ -74,6 +74,9 @@ yeastResidues: impute
 
 codonPref: scaleAndJoin
 	Rscript bin/codonPref.R outdir=$(OUTDIR)
+
+subsampling: impute
+	Rscript bin/subsampling.R outdir=$(OUTDIR)
 
 #Adds closing tags to the result HTML
 finalize: outdir
