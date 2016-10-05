@@ -227,6 +227,15 @@ html$figure(function(){
 
 
 
+
+scores <- spotting
+scores$score <- imputed[spotting$mut,"predicted.score"]
+scores[which(scores$id=="UBE2I-HYC-WT1"),"score"] <- 1
+scores$sd <- .44#imputed[spotting$mut,"joint.sd"]
+#sort by score
+scores <- scores[order(scores$score,decreasing=TRUE),]
+
+
 logger$info("Plotting imputed clones")
 
 #DRAW FIGURE FOR SPECTRUM CLONES
