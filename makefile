@@ -78,6 +78,10 @@ codonPref: scaleAndJoin
 subsampling: impute
 	Rscript bin/subsampling.R outdir=$(OUTDIR)
 
+somaticVnatural: impute
+	Rscript bin/somaticVnatural.R outdir=$(OUTDIR) geneName="UBE2I"
+	Rscript bin/somaticVnatural.R outdir=$(OUTDIR) geneName="SUMO1"
+
 #Adds closing tags to the result HTML
 finalize: outdir
 	Rscript bin/resultCtrl.R outdir=$(OUTDIR) cmd=finalize
