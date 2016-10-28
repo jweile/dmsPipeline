@@ -317,3 +317,179 @@ html$figure(function(){
 
 
 
+
+########################################################################################
+# Regularize/Impute TileSEQ data and evaluate against HiQual BarSEQ SNP-reachable muts
+#  -> Train only on TileSEQ SNPs
+#  -> Train on all TileSEQ data
+###########################################
+
+
+#Import TileSEQ and BarSEQ data separately
+ccbr <- read.csv(paste0(outdir,"compl_tileSEQ_results_UBE2I_transformed.csv"))
+rownames(ccbr) <- ccbr$mut
+ltri <- read.csv(paste0(outdir,"compl_timeseries_results_byMut.csv"))
+
+#Define as gold standard those BarSEQ variants that are very well-measured
+goldStandard <- ltri[with(ltri,se < 0.07 & regexpr(",",mut) < 1 & !(mut %in% c("null","WT"))),]
+goldStandard$pos <- with(goldStandard,as.numeric(substr(mut,2,nchar(mut)-1)))
+goldStandard$mutAA <- with(goldStandard,substr(mut,nchar(mut),nchar(mut)))
+
+#gold standard for SNP-accessible mutations
+goldenSNPs <- goldStandard[sapply(1:nrow(goldStandard),function(i) {
+	pos <- goldStandard[i,"pos"]
+	mutAA <- goldStandard[i,"mutAA"]
+	mutAA %in% reachable[[pos]]
+}),]
+rownames(goldenSNPs) <- goldenSNPs$mut
+
+
+testable.snp <- featable[,-c(9:12)]
+rownames(testable.snp) <- featable$mut
+
+#Replace scores with RegSEQ scores
+testable.snp$score <- sapply(ccbr[featable$mut,"score.m"], function(s) if(is.na(s)) NA else if(is.infinite(s)) NA else s)
+testable.snp$sd <- ccbr[featable$mut,"score.sd"]*5
+
+#Update positional averages based on TileSEQ SNPs
+testable.snp$posAverage <- sapply(1:nrow(testable.snp),function(k) {
+	pos <- testable.snp$pos[[k]]
+	mut <- testable.snp$mut[[k]]
+	is <- setdiff(which(testable.snp$pos == pos & 
+		testable.snp$mut %in% reachable.muts & 
+		!is.na(testable.snp$score)
+	),k)
+	# is <- is[!is.na(testable.snp$score[is])]
+	if (length(is)==0) return(NA)
+	else if (length(is)==1) {
+		testable.snp$score[is]
+	} else {
+		scores <- testable.snp$score[is]
+		sds <- testable.snp$sd[is]
+		weights <- (1/sds)/sum(1/sds)
+		sum(scores * weights)
+	}
+})
+testable.snp$posAverageAvail <- !is.na(testable.snp$posAverage)
+testable.snp$posAverage[is.na(testable.snp$posAverage)] <- mean(testable.snp$posAverage,na.rm=TRUE)
+
+#cross-validation of goldenSNPs
+snps <- goldenSNPs$mut
+xvplan <- list()
+while(length(snps) > 0) {
+	xvplan[[length(xvplan)+1]] <- if (length(snps) >= 25) sample(snps,25) else snps
+	snps <- setdiff(snps,xvplan[[length(xvplan)]])
+}
+
+#predict snps only based on snp training data
+xv <- mclapply(xvplan,function(ms) {
+	training <- testable.snp[!is.na(testable.snp$score) & testable.snp$mut %in% reachable.muts,]
+	training <- training[-which(training$mut %in% ms),]
+	trainfeat <- training[,-c(4,5,6)]
+	trainscores <- training[,"score"]
+	z <- randomForest(trainfeat,trainscores)
+	testfeat <- testable.snp[ms,-c(4,5,6)]
+	pred <- predict(z,testfeat)
+	gold <- goldenSNPs[ms,"score"]
+	data.frame(mut=ms,gold=gold,ccbr=ccbr[ms,"score.m"],ccbr.sd=ccbr[ms,"score.sd"],pred=pred)
+},mc.cores=6)
+xv <- do.call(rbind,xv)
+
+#Weighted averages
+wa <- function(ms,sds) {
+	ws <- (1/sds)/sum(1/sds)
+	mj <- sum(ws*ms)
+	vj <- sum(ws*(sds^2+ms^2)) -mj^2
+	c(mj=mj,sj=sqrt(vj))
+}
+
+
+rf.rmsd <- with(xv, sqrt(mean((gold-pred)^2)))
+# ccbr.rmsd <- with(na.omit(xv),sqrt(mean((gold-ccbr)^2)))
+regularize <- function(sd2) {
+	as.data.frame(do.call(rbind,mapply(function(m1,m2,sd1,sd2){
+		if (is.na(m1)) {
+			c(mj=m2,sj=sd2)
+		} else if (is.na(m2)) {
+			c(mj=m1,sj=sd1)
+		} else {
+			wa(c(m1,m2),c(sd1,sd2))
+		}
+	},m1=xv$ccbr,m2=xv$pred,sd1=xv$ccbr.sd,sd2=sd2,SIMPLIFY=FALSE)))
+}
+# regul <-regularize(rf.rmsd)
+regul <- regularize(0.06)
+regul.rmsd <- sqrt(mean((xv$gold-regul$mj)^2))
+
+
+#Now predict snps based on all training data
+
+testable.all <- featable[,-c(9:12)]
+rownames(testable.all) <- featable$mut
+
+#Replace scores with RegSEQ scores
+testable.all$score <- sapply(ccbr[featable$mut,"score.m"], function(s) if(is.na(s)) NA else if(is.infinite(s)) NA else s)
+testable.all$sd <- ccbr[featable$mut,"score.sd"]*5
+
+#Update positional averages
+testable.all$posAverage <- sapply(1:nrow(testable.all),function(k) {
+	pos <- testable.all$pos[[k]]
+	mut <- testable.all$mut[[k]]
+	is <- setdiff(which(testable.all$pos == pos),k)
+	is <- is[!is.na(testable.all$score[is])]
+	if (length(is)==0) return(NA)
+	else if (length(is)==1) {
+		testable.all$score[is]
+	} else {
+		scores <- testable.all$score[is]
+		sds <- testable.all$sd[is]
+		weights <- (1/sds)/sum(1/sds)
+		sum(scores * weights)
+	}
+})
+testable.all$posAverageAvail <- !is.na(testable.all$posAverage)
+testable.all$posAverage[is.na(testable.all$posAverage)] <- mean(testable.all$posAverage,na.rm=TRUE)
+
+xv2 <- mclapply(xvplan,function(ms) {
+	training <- testable.all[!is.na(testable.all$score),]
+	training <- training[-which(training$mut %in% ms),]
+	trainfeat <- training[,-c(4,5,6)]
+	trainscores <- training[,"score"]
+	z <- randomForest(trainfeat,trainscores)
+	testfeat <- testable.all[ms,-c(4,5,6)]
+	pred <- predict(z,testfeat)
+	gold <- goldenSNPs[ms,"score"]
+	data.frame(mut=ms,gold=gold,ccbr=ccbr[ms,"score.m"],ccbr.sd=ccbr[ms,"score.sd"],pred=pred)
+},mc.cores=6)
+xv2 <- do.call(rbind,xv2)
+
+rf.rmsd2 <- with(xv2, sqrt(mean((gold-pred)^2)))
+# ccbr.rmsd <- with(na.omit(xv2),sqrt(mean((gold-ccbr)^2)))
+regularize <- function(sd2) {
+	as.data.frame(do.call(rbind,mapply(function(m1,m2,sd1,sd2){
+		if (is.na(m1)) {
+			c(mj=m2,sj=sd2)
+		} else if (is.na(m2)) {
+			c(mj=m1,sj=sd1)
+		} else {
+			wa(c(m1,m2),c(sd1,sd2))
+		}
+	},m1=xv2$ccbr,m2=xv2$pred,sd1=xv2$ccbr.sd,sd2=sd2,SIMPLIFY=FALSE)))
+}
+# regul2 <- regularize(rf.rmsd2)
+regul2 <- regularize(0.06)
+regul2.rmsd <- sqrt(mean((xv2$gold-regul2$mj)^2))
+
+html$subsection("Regularizion based on SNPs vs POPs")
+html$figure(function(){
+	op <- par(mar=c(7,4,4,1)+1,las=2)
+	barplot(
+		c(
+			impute.snp=rf.rmsd,impute.pop=rf.rmsd2,
+			regularize.snp=regul.rmsd,regularize.pop=regul2.rmsd
+		),ylab="RMSD",col=paste0("steelblue",c(3,3,4,4)),border="gray"
+	)
+	grid(NA,NULL)
+	par(op)
+},paste0(outdir,"snpVpop_regularize"),4,5)
+# barplot(c(screen=ccbr.rmsd,predicted=rf.rmsd,regularized=regul.rmsd))
