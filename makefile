@@ -60,24 +60,30 @@ evaluateSpotting: impute pickSpottingClones
 accCons: impute
 	Rscript bin/accCons.R outdir=$(OUTDIR)
 
+#Create pymol scripts that can be used to colorirze structures according to fitness values
 colorizeStructure: impute
 	Rscript bin/colorizeStructure.R outdir=$(OUTDIR) \
 		infile=$(OUTDIR)imputed_regularized_UBE2I_scores.csv geneName=UBE2I
 	Rscript bin/colorizeStructure.R outdir=$(OUTDIR) \
 		infile=$(OUTDIR)imputed_regularized_SUMO1_scores.csv geneName=SUMO1
 
+#Try to find PPI interfaces based on comparison between Y2H and complementation data
 findInterfaces: barseqY2H impute
 	Rscript bin/findInterfaces.R outdir=$(OUTDIR)
 
+#Test whether reversions to yeast residues result in adaptive behaviour
 yeastResidues: impute
 	Rscript bin/yeastResidues.R outdir=$(OUTDIR)
 
+#test whether yeast codon preferences have impact on fitness scores
 codonPref: scaleAndJoin
 	Rscript bin/codonPref.R outdir=$(OUTDIR)
 
+#perform subsampling anayses to test whether full popcode yields superiour regularized matrices
 subsampling: impute
 	Rscript bin/subsampling.R outdir=$(OUTDIR)
 
+#test whether somatic cancer variants are more deleterious than natural variants
 somaticVnatural: impute
 	Rscript bin/somaticVnatural.R outdir=$(OUTDIR) geneName="UBE2I"
 	Rscript bin/somaticVnatural.R outdir=$(OUTDIR) geneName="SUMO1"
