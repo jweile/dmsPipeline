@@ -171,6 +171,35 @@ html$figure(function(){
 ccbr.log$bsd <- bayes.sd
 ccbr.log$minBC <- ccbr3$minBC
 
+#PLOT SYNONYMOUS AND STOP DISTRIBUTIONS
+
+colAlpha <- function(color, alpha) {
+    do.call(rgb,as.list(c(col2rgb(color)[,1],alpha=alpha*255,maxColorValue=255)))
+}
+plotStopSyn <- function(data,title="") {
+	with(data,{
+		stop.is <- which(substr(mut,nchar(mut),nchar(mut))=="_")
+		syn.is <- which(substr(mut,1,1)==substr(mut,nchar(mut),nchar(mut)))
+		miss.is <- setdiff(1:nrow(data),c(stop.is,syn.is))
+
+		br <- seq(-3,2,.1)
+		hist(mean.lphi[miss.is],col="gray",breaks=br,main=title,xlab=expression(log(phi)))
+		hist(mean.lphi[stop.is],add=TRUE,col=colAlpha("firebrick3",.5),breaks=br)
+		hist(mean.lphi[syn.is],add=TRUE,col=colAlpha("darkolivegreen3",.5),breaks=br)
+		
+		rbind(
+			summary(mean.lphi[stop.is]),
+			summary(mean.lphi[syn.is]),
+			summary(mean.lphi[miss.is])
+		)
+	})
+	legend("topright",c("missense","synonymous","stop"),fill=c("gray","darkolivegreen3","firebrick3"))
+}
+
+html$subsection("Synonymous vs Stop distributions")
+html$figure(function(){
+	plotStopSyn(ccbr.log)
+},paste0(outdir,"tileSEQ_",geneName,"_synVstop"))
 
 logger$info("Writing output")
 outfile <- paste0(outdir,"compl_tileSEQ_results_",geneName,".csv")
