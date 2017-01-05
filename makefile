@@ -1,6 +1,6 @@
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
-all: evaluateSpotting colorizeStructure findInterfaces compensatory accCons yeastResidues codonPref subsampling finalize
+all: evaluateSpotting colorizeStructure findInterfaces compensatory accCons yeastResidues codonPref subsampling somaticVnatural finalize
 
 #Create an output directory for this pipeline run
 outdir:
@@ -15,6 +15,9 @@ barseqTS: outdir
 tileseq: outdir
 	Rscript bin/tileseq.R outdir=$(OUTDIR) infile=input/raw_counts_SUMO1_tileseq.tsv geneName=SUMO1
 	Rscript bin/tileseq.R outdir=$(OUTDIR) infile=input/raw_counts_UBE2I_tileseq.tsv geneName=UBE2I
+	Rscript bin/tileseq.R outdir=$(OUTDIR) infile=input/raw_counts_NCS1_tileseq.tsv geneName=NCS1
+	Rscript bin/tileseq.R outdir=$(OUTDIR) infile=input/raw_counts_CALM1_tileseq.tsv geneName=CALM1
+	Rscript bin/tileseq.R outdir=$(OUTDIR) infile=input/raw_counts_TPK1_tileseq.tsv geneName=TPK1
 
 #Analyze the BarSEQ time series data from raw barcode counts
 barseqY2H: outdir
@@ -23,6 +26,9 @@ barseqY2H: outdir
 #Re-scale the TileSEQ data to match the BarSEQ scale and join the datasets
 scaleAndJoin: barseqTS tileseq
 	Rscript bin/scaleAndJoin.R outdir=$(OUTDIR)
+	Rscript bin/simpleScaler.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_tileSEQ_results_NCS1.csv geneName=NCS1
+	Rscript bin/simpleScaler.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_tileSEQ_results_CALM1.csv geneName=CALM1
+	Rscript bin/simpleScaler.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_tileSEQ_results_TPK1.csv geneName=TPK1
 
 #Build a feature table and then use RandomForest prediction to impute missing data
 # and regularize poorly measured data points
