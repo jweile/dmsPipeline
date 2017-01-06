@@ -35,8 +35,24 @@ scaleAndJoin: barseqTS tileseq
 impute: scaleAndJoin
 	Rscript bin/impute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_joint_results_UBE2I.csv \
 		geneName=UBE2I ctrlSet=res/UBE2I_imputationControl.txt
+	Rscript bin/impute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_joint_results_UBE2I.csv \
+		geneName=UBE2I ctrlSet=res/UBE2I_imputationControl.txt flipGOF=TRUE
 	Rscript bin/impute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_tileSEQ_results_SUMO1_transformed.csv \
 		geneName=SUMO1
+	Rscript bin/impute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_tileSEQ_results_SUMO1_transformed.csv \
+		geneName=SUMO1 flipGOF=TRUE
+	Rscript bin/simpleImpute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_scaled_results_NCS1.csv \
+		geneName=NCS1
+	Rscript bin/simpleImpute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_scaled_results_NCS1.csv \
+		geneName=NCS1 flipGOF=TRUE
+	Rscript bin/simpleImpute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_scaled_results_CALM1.csv \
+		geneName=CALM1
+	Rscript bin/simpleImpute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_scaled_results_CALM1.csv \
+		geneName=CALM1 flipGOF=TRUE
+	Rscript bin/simpleImpute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_scaled_results_TPK1.csv \
+		geneName=TPK1
+	Rscript bin/simpleImpute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_scaled_results_TPK1.csv \
+		geneName=TPK1 flipGOF=TRUE
 
 #Use double-mutant information to detect intragenic epistasis
 geneticInteractions: scaleAndJoin

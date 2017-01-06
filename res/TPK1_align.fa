@@ -1,0 +1,90 @@
+>sp|Q9H3S4|TPK1_HUMAN/1-243 Thiamin pyrophosphokinase 1 OS=Homo sapiens GN=TPK1 PE=1 SV=1
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------MEHAFTPLEPLLSTG----------------------------------------NLKYCLVILNQ
+PLDN---YFRHLWNKALLRACADGGANRLYD----ITEGE-----RESFLPEFINGDFDSIRPEVREYYATK
+GCELISTP-DQDHTDFTKCLKMLQKKIEEKDLKVDV------------------------------------
+--IVTLGGLAGRFDQIMASVNTLFQATHITPFPIIIIQEESLIYLLQPGK-HRLHVDTGMEG---DWCGLIP
+VGQPCMQVTTTGLKWNLTNDVLAFG-TLVSTSNTYDGSGVVTVETDHPLLWTMAIKS----------
+>sp|Q9R0M5|TPK1_MOUSE/1-243 Thiamin pyrophosphokinase 1 OS=Mus musculus GN=Tpk1 PE=1 SV=1
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------MEHAFTPLEPLLPTG----------------------------------------NLKYCLVVLNQ
+PLDA---RFRHLWKKALLRACADGGANHLYD----LTEGE-----RESFLPEFVSGDFDSIRPEVKEYYTKK
+GCDLISTP-DQDHTDFTKCLQVLQRKIEEKELQVDV------------------------------------
+--IVTLGGLGGRFDQIMASVNTLFQATHITPVPIIIIQKDSLIYLLQPGK-HRLHVDTGMEG---SWCGLIP
+VGQPCNQVTTTGLKWNLTNDVLGFG-TLVSTSNTYDGSGLVTVETDHPLLWTMAIKS----------
+>sp|Q5E9T4|TPK1_BOVIN/1-243 Thiamin pyrophosphokinase 1 OS=Bos taurus GN=TPK1 PE=2 SV=1
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------MEHAITPLDPLLPSG----------------------------------------SLKYCLVILNQ
+PLDK---CFRHLWHKALLRACADGGANHLYD----VTEGE-----RESFLPEFISGDFDSIRPEVREHYAIK
+GCEIISTP-DQDHTDFTKCLEVLQKKIEEKDLQVDM------------------------------------
+--IVTLGGLAGRFDQIMASVSTLFQAPQITSLPVIIIQEESLIYLLQPGK-HKLHVDTGMEG---DWCGLIP
+VGQPCNQVTTTGLKWNLTHQMLGFG-TLVSTSNTYDGSGVVTVETDHPLLWTMAIKN----------
+>sp|P30636|TPK1_CAEEL/1-243 Thiamin pyrophosphokinase 1 OS=Caenorhabditis elegans GN=tpk-1 PE=1 SV=3
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------MSKKLKPFEILEDSC------------------------------------------ASVCIWLNG
+EPTAISNRAENLWNKAKYRVATDGAVNEILK------------RKSFVEWPHIICGDFDSINKQIDTKN---
+-AKVVHLP-DQDYTDLSKSVQWCLEQKTLTSWEFEN------------------------------------
+--IVVLGGLNGRFDHTMSTLSSLIRFVDSQTP--VIVLDSRNLVLAVPTGDSNLDVNLEMTT---KMCGIIP
+IVQKETIVSSIGLKYEMENLALEFG-KLISTSNEVT-TSQVFLKSSSSLIFSIELENWVYKLDSL--
+>sp|P35202|THI80_YEAST/1-319 Thiamine pyrophosphokinase OS=Saccharomyces cerevisiae (strain ATCC 204508 / S288c) GN=THI80 PE=1 SV=1
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+-------------------------------------------------------------MSEECIENPER
+IKIGTDLINIRNKMNLKELIHP-------------------------------------NEDENSTLLILNQ
+KIDIPRPLFYKIWKLHDLKVCADGAANRLYD------YLDDDETLRIKYLPNYIIGDLDSLSEKVYKYYRKN
+KVTIIKQT-TQYSTDFTKCVNLISLHFNSPEFRSLISNKDNLQSNHGIELEKGIHTLYNTMTESLVFSKVTP
+ISLLALGGIGGRFDQTVHSITQLYTLSENASYFKLCYMTPTDLIFLIKKNGTLIEYDPQFRNTCIGNCGLLP
+IGEATLVKETRGLKWDVKNWPTSVVTGRVSSSNRFVGDNCCFIDTKDDIILNVEIFVDKLIDFL---
+>sp|P41888|TNR3_SCHPO/1-569 Thiamine pyrophosphokinase OS=Schizosaccharomyces pombe (strain 972 / ATCC 24843) GN=tnr3 PE=3 SV=1
+MAMSSITSAKQLNAEELLDECDSFNGEFVPGTIPFRANGAAIGYVTPLVLEILIKADNFKFNWVYVPGEYIE
+INASTFEKRTDILAKVLEHWRHNNTFGIADQWRNELYTVYGKSKKPVLAVERGGFWLFGFLSTGVHCTMYIP
+ATKEHPLRIWVPRRSPTKQTWPNYLDNSVAGGIAHGDSVIGTMIKEFSEEANLDVSSMNLIPCGTVSYIKME
+KRHWIQPELQYVFDLPVDDLVIPRINDGEVAGFSLLPLNQVLHELELKSFKPNCALVLLDFLIRHGIITPQH
+PQYLQTLERIHRPLPVPVGKYERGDSFEDTSKKAETCVPAKPQKATHQLAPCKAWLRDYDTDQKFAVLLLNQ
+PIDIPDDRFRTLWKRASIRVCADGGANQLRN-------------YDSSLKPDYVVGDFDSLTDETKAYYKEM
+GVNIVFDP-CQNTTDFMKCHKIIK------EHGIDT------------------------------------
+--IFVLCGMGGRVDHAIGNLNHLFWAASISEKNEVFLLTELNVSTLLQPGINHVDCHDNIG----LHCGLLP
+VGQSVYVKKTSGLEWNIEDRICQFG-GLVSSCNVVT-KATVTIEVNNFIVWTMETRL----------
+>sp|B9DGU7|TPK1_ARATH/1-267 Thiamine pyrophosphokinase 1 OS=Arabidopsis thaliana GN=TPK1 PE=2 SV=1
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+MSAMDVMIHSSSFL-LPCDET--------------------------------------STGTRYALVVLNQ
+SLPR---FTPLLWEHAKLRLCADGGANRIYDELPLFFPNEDALAIRNRYKPDVIKGDMDSIRRDVLDFYINL
+GTKVIDESHDQDTTDLDKCILYIRHSTLNQETSGLQ------------------------------------
+--ILATGALGGRFDHEAGNLNVLYRYPDTR---IVLLSDDCLIQLLPKTHRHEIHIQSSLEG---PHCGLIP
+IGTPSAKTTTSGLQWDLSNTEMRFG-GLISTSNLVK-EEKITVESDSDLLWTISIKKTGLSIQDHTP
+>sp|Q5JK24|TPK1_ORYSJ/1-264 Thiamine pyrophosphokinase 1 OS=Oryza sativa subsp. japonica GN=TPK1 PE=2 SV=1
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+-MPLPTMTHSSSFLRLPATSSPHPP-------------------------------PADDASAAYAVVVLNQ
+RLPR---FAPLLWDRARLRVCADGGANRVFDGMPELLPAEDPDQVRMRYKPDVIKGDMDSIRPEVKEYYSNL
+GAEIVDESHDQDTTDLHKCVSFITRNPPGSEESNLY------------------------------------
+--ILVLGALGGRFDHEMGNINVLYRFSNIR---IVLLSDDCSIFLLPKTHSHEIHIERSIEG---PHCGLIP
+MGSPSASTTTTGLRWNLDNTSMSYG-GLISTSNIVE-EETVRITSDSDLIWTISLRN----------
+>sp|O34664|THIN_BACSU/1-214 Thiamine pyrophosphokinase OS=Bacillus subtilis (strain 168) GN=thiN PE=1 SV=1
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+---------------------------------------------------------------MKTINIVAG
+GPKNLIPDLTGYTDEHTLWIGVDKGTVTLLD---------------AGIIPVEAFGDFDSITEQERRRIEKA
+APALHVYQAEKDQTDLDLALDWALEKQPD-------------------------------------------
+-IIQIFGITGGRADHFLGNIQLLYKGVKTN--IKIRLIDKQNHIQMFPPGEYDIEKDENKR-----YISFIP
+FSEDIHELTLTGFKYPLNNCHITLGSTLCISNELIHSRGTFSFAKG--ILIMIRSTD----------
