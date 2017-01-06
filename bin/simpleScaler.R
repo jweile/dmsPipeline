@@ -32,8 +32,8 @@ transf <- with(data,{
 	syn.is <- which(substr(mut,1,1)==substr(mut,nchar(mut),nchar(mut)))
 	# miss.is <- setdiff(1:nrow(data),c(stop.is,syn.is))
 
-	med.stop <- median(mean.lphi[stop.is])
-	med.syn <- median(mean.lphi[syn.is])
+	med.stop <- median(mean.lphi[stop.is],na.rm=TRUE)
+	med.syn <- median(mean.lphi[syn.is],na.rm=TRUE)
 	denom <- med.syn - med.stop
 	cbind(
 		score=(mean.lphi - med.stop)/denom,
