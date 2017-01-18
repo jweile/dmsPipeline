@@ -16,6 +16,7 @@ options(stringsAsFactors=FALSE)
 outdir <- getArg("outdir",default="workspace/test/")
 #get input file
 infile <- getArg("infile",default="workspace/test/compl_scaled_results_TPK1.csv")
+# infile <- paste0(outdir,"compl_scaled_results_TPK1.csv")
 # infile <- getArg("infile",default="workspace/test/compl_joint_results_UBE2I.csv")
 #get gene name
 geneName <- getArg("geneName",default="TPK1")
@@ -92,6 +93,13 @@ screen.singles <- screen.data[!(screen.data$mut %in% c("WT","null")) & regexpr("
 screen.singles <- screen.singles[regexpr("_",screen.singles$mut) < 1,]
 screen.singles$pos <- as.integer(substr(screen.singles$mut,2,nchar(screen.singles$mut)-1))
 
+# aaLetterFeatsWT <- do.call(cbind,lapply(aas,`==`,featable$wt.aa))
+# colnames(aaLetterFeatsWT) <- paste0("wt.",aas)
+# aaLetterFeatsMut <- do.call(cbind,lapply(aas,`==`,featable$mut.aa))
+# colnames(aaLetterFeatsMut) <- paste0("mut.",aas)
+
+# featable <- cbind(featable,aaLetterFeatsWT,aaLetterFeatsMut)
+
 
 logger$info(" -> Calculating positional averages")
 
@@ -129,7 +137,9 @@ provean.feat <- provean[featable$mut,c("provean","sift")]
 if (any(is.na(provean.feat$provean))){
 	provean.feat[which(is.na(provean.feat$provean)),"provean"] <- mean(provean.feat$provean,na.rm=TRUE)
 }
-if (any(is.na(provean.feat$sift))){
+if (all(is.na(provean.feat$sift))) {
+	provean.feat <- provean.feat[,c("provean"),drop=FALSE]
+} else if (any(is.na(provean.feat$sift))){
 	provean.feat[which(is.na(provean.feat$sift)),"sift"] <- mean(provean.feat$sift,na.rm=TRUE)
 }
 featable <- cbind(featable,provean.feat)
