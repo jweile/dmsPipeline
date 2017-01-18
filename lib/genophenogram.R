@@ -4,11 +4,29 @@
 ###########################
 
 # wt.aa = wildtype amino acid sequence
+#
 # List of mutations and their effects given in the following three vectors:
 # pos = vector of positions
 # mut.aa = vector of mutant AAs
+# socre = vector of scores
+#
+# a = bezier transformation intensity (with -0.5 <= a <= 0.5)
 # 
-genophenogram <- function(wt.aa, pos, mut.aa, score) {
+genophenogram <- function(wt.aa, pos, mut.aa, score, a=0) {
+
+	bend <- function(x,a=0) {
+		if (is.na(x)) return(NA)
+		if (a == 0) return(x)
+		if (abs(a) > 0.5) stop("parameter a must be between -0.5 and 0.5")
+		if (x < 0) x <- 0
+		if (x > 1) return(x)
+		q <- (1 - 2*a) / (4*a)
+		t <- ifelse(a >= 0,1,-1) * sqrt(x/(2*a) + q^2) - q
+		(1+2*a)*t - 2*a*t^2
+	}
+	if (a != 0) {
+		score <- sapply(score,bend,a=a)
+	}
 
 	layout(cbind(c(3,1),c(4,2)),widths=c(9.5,.5),heights=c(2,9))
 	#Main plot
@@ -27,7 +45,7 @@ genophenogram <- function(wt.aa, pos, mut.aa, score) {
 	arrows(-2,c(3.6,12.6),-2,c(12.4,20.4),length=.02,angle=90,code=3)
 	arrows(-4,c(7.6,9.6),-4,c(9.4,12.4),length=.02,angle=90,code=3)
 
-	x <- featable$pos
+	x <- pos
 	y <- length(aas) - sapply(mut.aa,function(a)which(aas==a)) + 1
 	colRamp <- colorRampPalette(c("royalblue3","white","firebrick3"))(11)
 	colIdx <- sapply(score,function(s) {
@@ -46,7 +64,7 @@ genophenogram <- function(wt.aa, pos, mut.aa, score) {
 	cols <- colRamp[colIdx]
 
 	#change wt positions to gold color
-	cols[with(featable,which(wt.aa==mut.aa))] <- "lightgoldenrod1"
+	cols[which(mut.aa==wt.aa[pos])] <- "lightgoldenrod1"
 
 	rect(x-.5,y-.5,x+.5,y+.5,col=cols,border=NA)
 	par(op)

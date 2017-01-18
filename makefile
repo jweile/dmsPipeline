@@ -42,17 +42,17 @@ impute: scaleAndJoin
 	Rscript bin/impute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_tileSEQ_results_SUMO1_transformed.csv \
 		geneName=SUMO1 flipGOF=TRUE
 	Rscript bin/simpleImpute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_scaled_results_NCS1.csv \
-		geneName=NCS1
+		geneName=NCS1 bend=0.1
 	Rscript bin/simpleImpute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_scaled_results_NCS1.csv \
-		geneName=NCS1 flipGOF=TRUE
+		geneName=NCS1 flipGOF=TRUE bend=0.1
 	Rscript bin/simpleImpute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_scaled_results_CALM1.csv \
 		geneName=CALM1
 	Rscript bin/simpleImpute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_scaled_results_CALM1.csv \
 		geneName=CALM1 flipGOF=TRUE
 	Rscript bin/simpleImpute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_scaled_results_TPK1.csv \
-		geneName=TPK1
+		geneName=TPK1 bend=0.4
 	Rscript bin/simpleImpute.R outdir=$(OUTDIR) infile=$(OUTDIR)compl_scaled_results_TPK1.csv \
-		geneName=TPK1 flipGOF=TRUE
+		geneName=TPK1 flipGOF=TRUE bend=0.4
 
 #Use double-mutant information to detect intragenic epistasis
 geneticInteractions: scaleAndJoin

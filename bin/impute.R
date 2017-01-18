@@ -82,6 +82,11 @@ conservation <- as.integer(scan(paste0("res/",geneName,"_cons.txt"),what="intege
 aas <- c("A","V","L","I","M","F","Y","W","R","H","K","D","E","S","T","N","Q","G","C","P")
 
 
+provean <- read.csv("res/provean.csv")
+provean <- provean[provean$protein==geneName,]
+rownames(provean) <- provean$mut
+
+
 ###########################
 # CONSTRUCT FEATURE TABLE #
 ###########################
@@ -217,6 +222,17 @@ data(BLOSUM62)
 featable$blosum <- mapply(function(from,to){
 	BLOSUM62[from,to]
 },from=featable$wt.aa,to=featable$mut.aa)
+
+
+
+provean.feat <- provean[featable$mut,c("provean","sift")]
+if (any(is.na(provean.feat$provean))){
+	provean.feat[which(is.na(provean.feat$provean)),"provean"] <- mean(provean.feat$provean,na.rm=TRUE)
+}
+if (any(is.na(provean.feat$sift))){
+	provean.feat[which(is.na(provean.feat$sift)),"sift"] <- mean(provean.feat$sift,na.rm=TRUE)
+}
+featable <- cbind(featable,provean.feat)
 
 
 logger$info(" -> Assigning biochemical properties")
@@ -604,7 +620,7 @@ logger$info("Drawing complete genophenogram")
 # pdf(paste0(outdir,"imputed_regularized_",geneName,"_genophenogram.pdf"),19,4)
 html$subsection("Regularized and Imputed Genophenogram")
 html$figure(function(){
-	genophenogram(wt.aa,featable$pos,featable$mut.aa,score)
+	genophenogram(wt.aa,featable$pos,featable$mut.aa,score.table$joint.score)
 },paste0(outdir,"imputed_regularized_",geneName,"_genophenogram",flptag),if(geneName=="UBE2I")19 else 16,4)
 # invisible(dev.off())
 

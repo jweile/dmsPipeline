@@ -21,6 +21,8 @@ infile <- getArg("infile",default="workspace/test/compl_scaled_results_TPK1.csv"
 geneName <- getArg("geneName",default="TPK1")
 # geneName <- getArg("geneName",default="UBE2I")
 
+bend <- as.numeric(getArg("bend",default=0))
+
 #Initialize logger
 logger <- new.logger(paste0(outdir,"simpleImpute_",geneName,".log"))
 
@@ -39,25 +41,13 @@ html <- new.resultfile(paste0(outdir,"results.html"))
 html$section(paste(geneName,"Imputation and regularization",flptag))
 
 
-# #A file that contains a set of mutations that should be excluded from training
-# # so their imputation results can be evaluated against spotting assays
-# ctrlSetFile <- getArg("ctrlSet",default=NA)
-# if (!is.na(ctrlSetFile)) {
-# 	logger$warn("Control set exclusion enabled!")
-# 	ctrlSet <- scan(ctrlSetFile,what="character")
-# } else {
-# 	ctrlSet <- character()
-# }
-
 logger$info("Reading input")
 
 screen.data <- read.csv(infile)
 rownames(screen.data) <- screen.data$mut
 
-# if (geneName == "SUMO1") {
-	screen.data <- screen.data[!is.na(screen.data$score),]
-	screen.data <- screen.data[is.finite(screen.data$score),]
-# }
+screen.data <- screen.data[!is.na(screen.data$score),]
+screen.data <- screen.data[is.finite(screen.data$score),]
 
 if (flipGOF) {
 	flipped <- sapply(screen.data$score,function(s) {
@@ -74,6 +64,11 @@ alFile <- paste0("res/",geneName,"_align.fa")
 amasLite <- new.amasLite()
 conservation <- amasLite$run(alFile)
 
+
+provean <- read.csv("res/provean.csv")
+provean <- provean[provean$protein==geneName,]
+rownames(provean) <- provean$mut
+
 aas <- c("A","V","L","I","M","F","Y","W","R","H","K","D","E","S","T","N","Q","G","C","P")
 
 
@@ -87,13 +82,9 @@ featable <- expand.grid(pos=1:length(wt.aa),mut.aa=aas)
 featable$wt.aa <- wt.aa[featable$pos]
 featable$mut <- with(featable,paste(wt.aa,pos,mut.aa,sep=""))
 
-# if (geneName == "UBE2I") {
-	featable$score <- sapply(featable$mut,function(m) screen.data[m,"score"])
-	featable$sd <- sapply(featable$mut,function(m) screen.data[m,"sd"])
-# } else {
-# 	featable$score <- sapply(featable$mut,function(m) screen.data[m,"score.m"])
-# 	featable$sd <- sapply(featable$mut,function(m) screen.data[m,"score.sd"])
-# }
+featable$score <- sapply(featable$mut,function(m) screen.data[m,"score"])
+featable$sd <- sapply(featable$mut,function(m) screen.data[m,"sd"])
+
 featable$score[featable$wt.aa == featable$mut.aa] <- 1
 featable$sd[featable$wt.aa == featable$mut.aa] <- 0.0001
 
@@ -101,109 +92,30 @@ screen.singles <- screen.data[!(screen.data$mut %in% c("WT","null")) & regexpr("
 screen.singles <- screen.singles[regexpr("_",screen.singles$mut) < 1,]
 screen.singles$pos <- as.integer(substr(screen.singles$mut,2,nchar(screen.singles$mut)-1))
 
-# if (geneName == "UBE2I") {
 
-# 	logger$info(" -> Calculating positional averages")
+logger$info(" -> Calculating positional averages")
 
-# 	featable$posAverage <- sapply(1:nrow(featable),function(k) {
-# 		pos <- featable$pos[[k]]
-# 		mut <- featable$mut[[k]]
-# 		j <- which(screen.singles$mut==mut)
-# 		is <- setdiff(which(screen.singles$pos == pos),j)
-# 		if (length(is)==0) return(NA)
-# 		else if (length(is)==1) {
-# 			screen.singles$score[is]
-# 		} else {
-# 			scores <- screen.singles$score[is]
-# 			sds <- screen.singles$sd[is]
-# 			weights <- (1/sds)/sum(1/sds)
-# 			sum(scores * weights)
-# 		}
-# 	})
-# 	featable$posAverageAvail <- !is.na(featable$posAverage)
-# 	featable$posAverage[is.na(featable$posAverage)] <- mean(featable$posAverage,na.rm=TRUE)
+screen.singles <- screen.singles[!is.na(screen.singles$score),]
+screen.singles <- screen.singles[!is.infinite(screen.singles$score),]
 
-# 	logger$info(" -> Calculating multi-mutant averages")
+featable$posAverage <- sapply(1:nrow(featable),function(k) {
+	pos <- featable$pos[[k]]
+	mut <- featable$mut[[k]]
+	j <- which(screen.singles$mut==mut)
+	is <- setdiff(which(screen.singles$pos == pos),j)
+	if (length(is)==0) return(NA)
+	else if (length(is)==1) {
+		screen.singles$score[is]
+	} else {
+		scores <- screen.singles$score[is]
+		sds <- screen.singles$sd[is]
+		weights <- (1/sds)/sum(1/sds)
+		sum(scores * weights)
+	}
+})
+featable$posAverageAvail <- !is.na(featable$posAverage)
+featable$posAverage[is.na(featable$posAverage)] <- mean(featable$posAverage,na.rm=TRUE)
 
-# 	multimuts <- strsplit(screen.data$mut,",")
-# 	anymut.idx <- hash()
-# 	for (i in 1:nrow(screen.data)) {
-# 		if (length(multimuts[[i]] > 1)) {
-# 			for (m in multimuts[[i]]) {
-# 				anymut.idx[[m]] <- c(anymut.idx[[m]],i)
-# 			}
-# 		}
-# 	}
-# 	singlemut.idx <- hash()
-# 	for (i in 1:nrow(screen.singles)) {
-# 		m <- screen.singles$mut[[i]]
-# 		singlemut.idx[[m]] <- c(singlemut.idx[[m]],i)
-# 	}
-
-# 	featable$mmAverage <- sapply(featable$mut, function(m) {
-# 		is <- anymut.idx[[m]]
-# 		if (length(is) > 2) {
-# 			scores <- screen.data$score[is]
-# 			sds <- screen.data$sd[is]
-# 			weights <- (1/sds)/sum(1/sds)
-# 			sum(scores * weights)
-# 		} else NA
-# 	})
-# 	featable$mmAverageAvail <- !is.na(featable$mmAverage)
-# 	featable$mmAverage[is.na(featable$mmAverage)] <- mean(featable$mmAverage,na.rm=TRUE)
-
-
-# 	logger$info(" -> Calculating multiplicative model predictions")
-
-# 	featable$giImpute <- sapply(featable$mut, function(m) {
-# 		is <- anymut.idx[[m]]
-# 		preds <- do.call(c,lapply(is, function(i) {
-# 			dm.score <- screen.data[i,"score"]
-# 			other.ms <- setdiff(multimuts[[i]],m)
-# 			if (length(other.ms) == 1 && has.key(other.ms,singlemut.idx)) {
-# 				sm.score <- screen.singles[singlemut.idx[[other.ms]],"score"]
-# 				sms <- mean(sm.score,na.rm=TRUE)
-# 				if (dm.score <= 0) {
-# 					if (sms <= 0) NA else 0
-# 				} else if (sms <= 0) {
-# 					NA
-# 				} else {
-# 					out <- dm.score / sms
-# 					if (out > 3) 3 else out
-# 				}
-# 			} else NULL
-# 		}))
-# 		mean(preds,na.rm=TRUE)
-# 	})
-# 	featable$giImputeAvail <- !is.na(featable$giImpute)
-# 	featable$giImpute[is.na(featable$giImpute)] <- mean(featable$giImpute,na.rm=TRUE)
-
-# } else {
-
-	logger$info(" -> Calculating positional averages")
-
-	screen.singles <- screen.singles[!is.na(screen.singles$score),]
-	screen.singles <- screen.singles[!is.infinite(screen.singles$score),]
-
-	featable$posAverage <- sapply(1:nrow(featable),function(k) {
-		pos <- featable$pos[[k]]
-		mut <- featable$mut[[k]]
-		j <- which(screen.singles$mut==mut)
-		is <- setdiff(which(screen.singles$pos == pos),j)
-		if (length(is)==0) return(NA)
-		else if (length(is)==1) {
-			screen.singles$score[is]
-		} else {
-			scores <- screen.singles$score[is]
-			sds <- screen.singles$sd[is]
-			weights <- (1/sds)/sum(1/sds)
-			sum(scores * weights)
-		}
-	})
-	featable$posAverageAvail <- !is.na(featable$posAverage)
-	featable$posAverage[is.na(featable$posAverage)] <- mean(featable$posAverage,na.rm=TRUE)
-
-# }
 
 featable$conservation <- conservation[featable$pos]
 
@@ -212,6 +124,15 @@ data(BLOSUM62)
 featable$blosum <- mapply(function(from,to){
 	BLOSUM62[from,to]
 },from=featable$wt.aa,to=featable$mut.aa)
+
+provean.feat <- provean[featable$mut,c("provean","sift")]
+if (any(is.na(provean.feat$provean))){
+	provean.feat[which(is.na(provean.feat$provean)),"provean"] <- mean(provean.feat$provean,na.rm=TRUE)
+}
+if (any(is.na(provean.feat$sift))){
+	provean.feat[which(is.na(provean.feat$sift)),"sift"] <- mean(provean.feat$sift,na.rm=TRUE)
+}
+featable <- cbind(featable,provean.feat)
 
 
 logger$info(" -> Assigning biochemical properties")
@@ -340,12 +261,6 @@ colnames(foo) <- paste0(colnames(foo),".avAcc")
 featable <- cbind(featable,foo)
 
 
-# logger$info(" -> Loading structural features")
-
-# strucfeats <- read.csv(paste0("res/",geneName,"_structural_features.csv"))
-
-# featable <- cbind(featable,strucfeats[featable$pos,2:ncol(strucfeats)])
-
 #Convert strings to factors to accomodate for randomForest input requirements
 featable$mut.aa <- factor(featable$mut.aa,levels=aas)
 featable$wt.aa <- factor(featable$wt.aa,levels=aas)
@@ -355,48 +270,8 @@ featable$minus2.aroVali <- factor(featable$minus2.aroVali)
 featable$minus1.aroVali <- factor(featable$minus1.aroVali)
 featable$plus1.aroVali <- factor(featable$plus1.aroVali)
 featable$plus2.aroVali <- factor(featable$plus2.aroVali)
-# featable$sec.struc <- factor(featable$sec.struc)
 
-clevels <- c("no","bb","res")
-
-# if (geneName == "UBE2I") {
-
-# 	featable$cia.psiKxE <- factor(featable$cia.psiKxE,levels=clevels)
-# 	featable$cia.rangap <- factor(featable$cia.rangap,levels=clevels)
-# 	featable$cia.sumo <- factor(featable$cia.sumo,levels=clevels)
-# 	featable$cia.ranbp2 <- factor(featable$cia.ranbp2,levels=clevels)
-# 	featable$cia.homodimer <- factor(featable$cia.homodimer,levels=clevels)
-# 	featable$cia.sumo.nc <- factor(featable$cia.sumo.nc,levels=clevels)
-# 	featable$cia.e1 <- factor(featable$cia.e1,levels=clevels)
-
-# } else {
-
-	# featable$daxx.cia <- factor(featable$daxx.cia,levels=clevels)
-	# featable$e1.cia <- factor(featable$e1.cia,levels=clevels)
-	# featable$pias.cia <- factor(featable$pias.cia,levels=clevels)
-	# featable$pml.cia <- factor(featable$pml.cia,levels=clevels)
-	# featable$ranbp.cia <- factor(featable$ranbp.cia,levels=clevels)
-	# featable$senp1.cia <- factor(featable$senp1.cia,levels=clevels)
-	# featable$senp2.cia <- factor(featable$senp2.cia,levels=clevels)
-	# featable$tdg.cia <- factor(featable$tdg.cia,levels=clevels)
-	# featable$ube2i.cov.cia <- factor(featable$ube2i.cov.cia,levels=clevels)
-	# featable$ubei2i.noncov.cia <- factor(featable$ubei2i.noncov.cia,levels=clevels)
-# }
-
-# featable$numInterfaces <- apply(
-# 	featable[,regexpr("^b\\.",colnames(featable))>0],
-# 	1, function(x) sum(x > 0)
-# )
-
-# featable$numCIA.any <- apply(
-# 	featable[,regexpr("cia",colnames(featable))>0],
-# 	1, function(x) sum(x != "no")
-# )
-
-# featable$numCIA.res <- apply(
-# 	featable[,regexpr("cia",colnames(featable))>0],
-# 	1, function(x) sum(x == "res")
-# )
+# clevels <- c("no","bb","res")
 
 
 logger$info(" -> Saving feature table")
@@ -413,45 +288,6 @@ html$link.data(outfile)
 # logger$info("Calculating Imputation baseline")
 
 testable <- featable[!is.na(featable$score),]
-# testable <- featable[!is.na(featable$score) & !(featable$mut %in% ctrlSet),]
-
-
-# #Linear regression based on positional average, multimutant and multiplicative numbers
-
-# rmsds <- numeric()
-# logger$info(" -> Cross validating regession based on averages")
-# rmsds[["averagesOnly"]] <- sqrt(mean(sapply(1:nrow(testable), function(i) {
-# 	coef <- coefficients(with(testable[-i,],lm(score ~ posAverage + mmAverage + giImpute)))
-# 	pred <- coef[["(Intercept)"]] + sum(sapply(names(coef)[-1],function(k)coef[[k]]*testable[i,k]))
-# 	real <- testable[i,"score"]
-# 	(pred-real)^2
-# })))
-
-# logger$info(" -> Cross validating regession based on averages and BLOSUM")
-# rmsds[["blosum"]] <- sqrt(mean(sapply(1:nrow(testable), function(i) {
-# 	coef <- coefficients(with(testable[-i,],lm(score ~ posAverage + mmAverage + giImpute + blosum)))
-# 	pred <- coef[["(Intercept)"]] + sum(sapply(names(coef)[-1],function(k)coef[[k]]*testable[i,k]))
-# 	real <- testable[i,"score"]
-# 	(pred-real)^2
-# })))
-
-# logger$info(" -> Cross validating regession based on averages and conservation")
-# rmsds[["conservation"]] <- sqrt(mean(sapply(1:nrow(testable), function(i) {
-# 	coef <- coefficients(with(testable[-i,],lm(score ~ posAverage + mmAverage + giImpute + conservation)))
-# 	pred <- coef[["(Intercept)"]] + sum(sapply(names(coef)[-1],function(k)coef[[k]]*testable[i,k]))
-# 	real <- testable[i,"score"]
-# 	(pred-real)^2
-# })))
-
-# logger$info(" -> Cross validating regession based on averages, BLOSUM and conservation")
-# rmsds[["blosum+cons"]] <- sqrt(mean(sapply(1:nrow(testable), function(i) {
-# 	coef <- coefficients(with(testable[-i,],lm(score ~ posAverage + mmAverage + giImpute + blosum + conservation)))
-# 	pred <- coef[["(Intercept)"]] + sum(sapply(names(coef)[-1],function(k)coef[[k]]*testable[i,k]))
-# 	real <- testable[i,"score"]
-# 	(pred-real)^2
-# })))
-
-
 
 ######################
 # PERFORM IMPUTATION #
@@ -537,23 +373,10 @@ html$figure(function(){
 
 html$subsection("Scores vs RandomForest predictions")
 html$figure(function(){
-	# if (geneName == "UBE2I") {
-	# 	# pdf(paste0(outdir,"imputation_",geneName,"_scoreVpred.pdf"),9,4)
-	# 	#Plot growth score vs predicted score
-	# 	with(sqds,topoScatter(score,pred,xlab="real score",ylab="predicted score",
-	# 		main=sprintf("R = %.2f",cor(score,pred)),resolution=60
-	# 	))
-	# 	abline(v=0:1,h=0:1,col=c("firebrick3","darkolivegreen3"))
-	# 	# invisible(dev.off())
-	# } else {
-		# pdf(paste0(outdir,"imputation_",geneName,"_scoreVpred.pdf"),7,4)
-		#Plot growth score vs predicted score
-		with(sqds,plot(score,pred,xlab="real score",ylab="predicted score",
-			main=sprintf("R = %.2f",cor(score,pred)),pch=20
-		))
-		abline(v=0:1,h=0:1,col=c("firebrick3","darkolivegreen3"))
-		# invisible(dev.off())
-	# }
+	with(sqds,plot(score,pred,xlab="real score",ylab="predicted score",
+		main=sprintf("R = %.2f",cor(score,pred)),pch=20
+	))
+	abline(v=0:1,h=0:1,col=c("firebrick3","darkolivegreen3"))
 },paste0(outdir,"imputation_",geneName,"_scoreVpred",flptag),if(geneName=="UBE2I") 9 else 7, 4)
 
 
@@ -600,7 +423,7 @@ logger$info("Drawing complete genophenogram")
 # pdf(paste0(outdir,"imputed_regularized_",geneName,"_genophenogram.pdf"),19,4)
 html$subsection("Regularized and Imputed Genophenogram")
 html$figure(function(){
-	genophenogram(wt.aa,featable$pos,featable$mut.aa,score)
+	genophenogram(wt.aa,featable$pos,featable$mut.aa,score.table$joint.score,a=bend)
 },paste0(outdir,"imputed_regularized_",geneName,"_genophenogram",flptag),if(geneName=="UBE2I")19 else 16,4)
 # invisible(dev.off())
 
