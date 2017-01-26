@@ -9,6 +9,7 @@ source("lib/liblogging.R")
 source("lib/cliargs.R")
 
 library("Biostrings")
+library("beeswarm")
 
 data(BLOSUM62)
 
@@ -42,6 +43,13 @@ provean <- provean[!is.na(provean$POSITION),]
 provean$mut <- with(provean,paste0(RESIDUE_REF,POSITION,RESIDUE_ALT))
 rownames(provean) <- provean$mut
 
+drawStar <- function(pval,x1,x2,y) {
+	if (pval < 0.05) {
+		lines(c(x1,x1,x2,x2),c(y-.1,y,y,y-.1))
+		text(mean(c(x1,x2)),y+.1,"*",cex=1.4)
+	}
+}
+
 ##############
 # CALCULATE #
 ##############
@@ -69,6 +77,12 @@ calculateAndPlot <- function(singles,datalabel) {
 		interface=singles[singles.maxBurial > 0.4,"score"],
 		surface=singles[singles.acc > 0.6 & singles.maxBurial < 0.2,"score"]
 	)
+
+	iBurials <- struc[as.character(singles.pos),c("b.sumo","b.sumo.nc","b.e1","b.rangap","b.ranbp2","b.homodimer")]
+	interface.groups <- c(lapply(colnames(iBurials),function(ifID) {
+		singles[iBurials[,ifID] > 0.4,"score"]
+	}),list(acc.groups$surface))
+	names(interface.groups) <- c("SUMO","SUMO-nc","E1","Substrate","E3","Homodimer","None")
 
 	logger$info("Dividing mutations into conservation classes")
 
@@ -116,6 +130,30 @@ calculateAndPlot <- function(singles,datalabel) {
 	logger$info("Drawing plot")
 
 	html$subsection(paste(datalabel,"data"))
+
+	html$figure(function(){
+
+		beeswarm(
+			interface.groups,
+			cex=0.6,pch=20,
+			col=c("firebrick3","firebrick4","steelblue3","chartreuse3","gray60","gold2","gray40"),
+			ylim=c(-0.5,2.5),
+			ylab="mutant fitness score"
+		)
+		abline(h=0:1,col=c("firebrick2","darkolivegreen3"))
+		bxplot(interface.groups,add=TRUE,col="gray30")
+
+		cVnc <- with(interface.groups,wilcox.test(SUMO,`SUMO-nc`,alternative="greater"))
+		drawStar(cVnc$p.value,1,2,2.2)
+		sumoVe1 <- with(interface.groups,wilcox.test(SUMO,E1,alternative="greater"))
+		drawStar(sumoVe1$p.value,1,3,2.4)
+		e1VSub <- with(interface.groups,wilcox.test(Substrate,E1,alternative="greater"))
+		drawStar(sumoVe1$p.value,3,4,2.2)
+		noneVhomo <- with(interface.groups,wilcox.test(None,Homodimer,alternative="greater"))
+		drawStar(sumoVe1$p.value,6,7,2.4)
+
+	},paste0(outdir,"interfaceBurial_",datalabel),9,6)
+
 	# pdf(paste0(outdir,"accessibilityAndConservation.pdf"),7.5,4)
 	html$figure(function(){
 
