@@ -86,22 +86,22 @@ html$figure(function(){
 # invisible(dev.off())
 
 
-logger$info("Plotting Error Regularization W/O log transformation")
+# logger$info("Plotting Error Regularization W/O log transformation")
 
-# pdf(paste0(outdir,"tileSEQ_",geneName,"_SDvPHI.pdf"),10,5)
-html$subsection("Modeling Error Prior without log transformation")
-html$figure(function(){
-	op <- par(mfrow=c(1,2))
-	#Plot minBC vs SD
-	with(ccbr3,topoScatter(minBC,sd+0.00001,log="xy",maxFreq=35,thresh=3,
-		resolution=40, xlab="Read depth (Millions)", ylab=expression(sigma)
-	))
-	#Plot score vs SD
-	with(ccbr3[ccbr3$minBC > 500,],topoScatter(meanphi,sd,log="xy",pch=20,resolution=40,
-		xlab=expression(E(phi)),ylab=expression(sigma),maxFreq=35,thresh=3
-	))
-	par(op)
-},paste0(outdir,"tileSEQ_",geneName,"_SDvPHI"),10,5)
+# # pdf(paste0(outdir,"tileSEQ_",geneName,"_SDvPHI.pdf"),10,5)
+# html$subsection("Modeling Error Prior without log transformation")
+# html$figure(function(){
+# 	op <- par(mfrow=c(1,2))
+# 	#Plot minBC vs SD
+# 	with(ccbr3,topoScatter(minBC,sd+0.00001,log="xy",maxFreq=35,thresh=3,
+# 		resolution=40, xlab="Read depth (Millions)", ylab=expression(sigma)
+# 	))
+# 	#Plot score vs SD
+# 	with(ccbr3[ccbr3$minBC > 500,],topoScatter(meanphi,sd,log="xy",pch=20,resolution=40,
+# 		xlab=expression(E(phi)),ylab=expression(sigma),maxFreq=35,thresh=3
+# 	))
+# 	par(op)
+# },paste0(outdir,"tileSEQ_",geneName,"_SDvPHI"),10,5)
 # invisible(dev.off())
 
 
