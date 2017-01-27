@@ -1,6 +1,6 @@
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
-all: evaluateSpotting colorizeStructure findInterfaces compensatory accCons yeastResidues codonPref subsampling somaticVnatural finalize
+all: evaluateSpotting colorizeStructure findInterfaces compensatory accCons yeastResidues codonPref subsampling diseaseVariants finalize
 
 #Create an output directory for this pipeline run
 outdir:
@@ -87,7 +87,13 @@ colorizeStructure: impute
 	Rscript bin/colorizeStructure.R outdir=$(OUTDIR) \
 		infile=$(OUTDIR)imputed_regularized_UBE2I_scores.csv geneName=UBE2I
 	Rscript bin/colorizeStructure.R outdir=$(OUTDIR) \
-		infile=$(OUTDIR)imputed_regularized_SUMO1_scores.csv geneName=SUMO1
+		infile=$(OUTDIR)imputed_regularized_SUMO1_scores.csv geneName=SUMO1 chain=B
+	Rscript bin/colorizeStructure.R outdir=$(OUTDIR) \
+		infile=$(OUTDIR)imputed_regularized_NCS1_scores.csv geneName=NCS1 bend=0.1
+	Rscript bin/colorizeStructure.R outdir=$(OUTDIR) \
+		infile=$(OUTDIR)imputed_regularized_CALM1_scores.csv geneName=CALM1 
+	Rscript bin/colorizeStructure.R outdir=$(OUTDIR) \
+		infile=$(OUTDIR)imputed_regularized_TPK1_scores.csv geneName=TPK1 bend=0.4
 
 #Try to find PPI interfaces based on comparison between Y2H and complementation data
 findInterfaces: barseqY2H impute
@@ -106,9 +112,12 @@ subsampling: impute
 	Rscript bin/subsampling.R outdir=$(OUTDIR)
 
 #test whether somatic cancer variants are more deleterious than natural variants
-somaticVnatural: impute
-	Rscript bin/somaticVnatural.R outdir=$(OUTDIR) geneName="UBE2I"
-	Rscript bin/somaticVnatural.R outdir=$(OUTDIR) geneName="SUMO1"
+# somaticVnatural: impute
+# 	Rscript bin/somaticVnatural.R outdir=$(OUTDIR) geneName="UBE2I"
+# 	Rscript bin/somaticVnatural.R outdir=$(OUTDIR) geneName="SUMO1"
+
+diseaseVariants: impute
+	Rscript bin/diseaseVariants.R outdir=$(OUTDIR)
 
 #Adds closing tags to the result HTML
 finalize: outdir

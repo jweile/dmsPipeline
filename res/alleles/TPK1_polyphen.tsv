@@ -1,0 +1,6 @@
+#o_acc	o_pos	o_aa1	o_aa2	rsid	acc	pos	aa1	aa2	prediction	pph2_prob	pph2_FPR	pph2_TPR
+Q9H3S4	219	N	S	?	Q9H3S4	219	N	S	probably damaging	1	0.00026	0.00018
+Q9H3S4	142	L	F	?	Q9H3S4	142	L	F	probably damaging	1	0.00026	0.00018
+Q9H3S4	50	N	H	?	Q9H3S4	50	N	H	probably damaging	1	0.00026	0.00018
+Q9H3S4	40	L	P	?	Q9H3S4	40	L	P	possibly damaging	0.88	0.0647	0.824
+Q9H3S4	33	R	H	?	Q9H3S4	33	R	H	benign	0.005	0.26	0.968

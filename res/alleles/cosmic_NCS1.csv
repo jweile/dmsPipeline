@@ -1,0 +1,33 @@
+Position,CDS Mutation,AA Mutation,Mutation ID (COSM),Count,Type
+27,c.81C>T,p.V27V,5585886,1,Substitution - coding silent
+45,c.133G>A,p.A45T,5110068,1,Substitution - Missense
+52,c.156C>T,p.Y52Y,3904773,1,Substitution - coding silent
+56,c.168C>T,p.F56F,4470924,1,Substitution - coding silent
+57,c.169C>T,p.P57S,4471087,1,Substitution - Missense
+57,c.170C>T,p.P57L,4471285,1,Substitution - Missense
+64,c.191T>A,p.F64Y,1624628,1,Substitution - Missense
+66,c.196A>G,p.T66A,3699472,1,Substitution - Missense
+67,c.199T>A,p.F67I,1497041,1,Substitution - Missense
+79,c.235C>T,p.R79*,1624629,3,Substitution - Nonsense
+79,c.236G>A,p.R79Q,3699473,1,Substitution - Missense
+82,c.246C>A,p.F82L,3328933,2,Substitution - Missense
+83,c.249C>T,p.S83S,3328934,1,Substitution - coding silent
+84,c.250G>A,p.E84K,1216884,1,Substitution - Missense
+85,c.255C>T,p.F85F,5410534,1,Substitution - coding silent
+88,c.263C>T,p.A88V,283147,2,Substitution - Missense
+94,c.280C>T,p.R94W,4706023,1,Substitution - Missense
+95,c.284G>A,p.G95E,1489731,1,Substitution - Missense
+97,c.289C>A,p.L97M,4884182,1,Substitution - Missense
+100,c.300G>T,p.K100N,1674901,2,Substitution - Missense
+105,c.314T>G,p.F105C,1330691,1,Substitution - Missense
+108,c.324C>T,p.Y108Y,1242564,3,Substitution - coding silent
+109,c.325G>T,p.D109Y,5012088,1,Substitution - Missense
+111,c.331G>A,p.D111N,752554,1,Substitution - Missense
+138,c.414C>T,p.L138L,3926286,1,Substitution - coding silent
+149,c.446T>C,p.V149A,3328938,1,Substitution - Missense
+151,c.452G>A,p.R151Q,4152100,1,Substitution - Missense
+155,c.463A>T,p.M155L,1624630,2,Substitution - Missense
+161,c.481G>T,p.D161Y,355604,1,Substitution - Missense
+187,c.561C>T,p.D187D,3904775,1,Substitution - coding silent
+188,c.562G>A,p.G188R,5063681,1,Substitution - Missense
+,c.307+1G>T,p.?,1643754,1,Unknown

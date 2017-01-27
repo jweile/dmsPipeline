@@ -1,0 +1,70 @@
+Position,CDS Mutation,AA Mutation,Mutation ID (COSM),Count,Type
+7,c.20C>T,p.P7L,3366839,1,Substitution - Missense
+14,c.41C>T,p.T14I,3942106,1,Substitution - Missense
+17,c.51G>C,p.L17F,1448895,1,Substitution - Missense
+26,c.76C>T,p.Q26*,3879046,1,Substitution - Nonsense
+29,c.85G>T,p.D29Y,370604,1,Substitution - Missense
+29,c.86A>T,p.D29V,3259261,2,Substitution - Missense
+33,c.97C>T,p.R33C,1086952,1,Substitution - Missense
+35,c.103C>T,p.L35F,4735552,1,Substitution - Missense
+40,c.118C>T,p.L40F,5872147,1,Substitution - Missense
+48,c.142G>T,p.G48C,360369,2,Substitution - Missense
+57,c.169G>C,p.E57Q,745067,1,Substitution - Missense
+58,c.173G>A,p.G58E,3635614,1,Substitution - Missense
+58,c.173G>T,p.G58V,745068,1,Substitution - Missense
+61,c.181G>A,p.E61K,4531723,1,Substitution - Missense
+64,c.192G>T,p.L64F,4972479,1,Substitution - Missense
+65,c.194C>T,p.P65L,1568554,1,Substitution - Missense
+80,c.239G>T,p.R80I,745069,1,Substitution - Missense
+92,c.275C>T,p.S92L,3635613,1,Substitution - Missense
+95,c.283G>A,p.D95N,5939766,1,Substitution - Missense
+97,c.289G>T,p.D97Y,4735551,1,Substitution - Missense
+100,c.298G>A,p.D100N,452556,1,Substitution - Missense
+103,c.308A>C,p.K103T,4792987,2,Substitution - Missense
+104,c.311G>A,p.C104Y,78689,1,Substitution - Missense
+106,c.317A>T,p.K106I,4453584,1,Substitution - Missense
+109,c.325C>A,p.Q109K,745070,1,Substitution - Missense
+110,c.330G>C,p.K110N,1268396,1,Substitution - Missense
+112,c.335T>C,p.I112T,3879045,1,Substitution - Missense
+114,c.340G>A,p.E114K,5924449,1,Substitution - Missense
+116,c.346G>T,p.D116Y,1086951,1,Substitution - Missense
+118,c.353A>C,p.K118T,3259250,1,Substitution - Missense
+122,c.366C>T,p.I122I,4490642,1,Substitution - coding silent
+135,c.405T>G,p.I135M,1230145,1,Substitution - Missense
+140,c.420T>A,p.N140K,4153940,1,Substitution - Missense
+144,c.430C>T,p.Q144*,3635611,1,Substitution - Nonsense
+145,c.434C>T,p.A145V,4587221,1,Substitution - Missense
+150,c.448C>T,p.P150S,3635609,1,Substitution - Missense
+150,c.449C>T,p.P150L,5912710,1,Substitution - Missense
+152,c.454C>A,p.P152T,398628,1,Substitution - Missense
+152,c.454C>T,p.P152S,3923032,1,Substitution - Missense
+152,c.456A>T,p.P152P,5811393,1,Substitution - coding silent
+155,c.463A>G,p.I155V,76792,1,Substitution - Missense
+156,c.466A>T,p.I156F,5557230,1,Substitution - Missense
+159,c.475G>A,p.E159K,4904566,1,Substitution - Missense
+161,c.483G>A,p.L161L,3635607,1,Substitution - coding silent
+165,c.495C>T,p.L165L,4903137,1,Substitution - coding silent
+166,c.498A>T,p.Q166H,3259244,1,Substitution - Missense
+168,c.502G>A,p.G168R,745071,1,Substitution - Missense
+168,c.503G>A,p.G168E,3259243,2,Substitution - Missense
+171,c.512G>T,p.R171M,326737,1,Substitution - Missense
+173,c.518A>C,p.H173P,5804714,1,Substitution - Missense
+175,c.523G>A,p.D175N,421557,1,Substitution - Missense
+179,c.535G>A,p.E179K,5553639,1,Substitution - Missense
+184,c.552C>T,p.G184G,3635604,1,Substitution - coding silent
+189,c.566G>T,p.G189V,3995427,1,Substitution - Missense
+203,c.609C>T,p.N203N,3635602,1,Substitution - coding silent
+205,c.613A>T,p.T205S,393765,1,Substitution - Missense
+207,c.619G>A,p.D207N,3635600,1,Substitution - Missense
+210,c.630T>A,p.A210A,5791517,1,Substitution - coding silent
+212,c.635G>T,p.G212V,4770819,1,Substitution - Missense
+213,c.637A>T,p.T213S,395371,1,Substitution - Missense
+215,c.644T>C,p.V215A,3259234,1,Substitution - Missense
+221,c.663C>T,p.Y221Y,1496571,1,Substitution - coding silent
+232,c.694G>T,p.D232Y,4937588,1,Substitution - Missense
+240,c.718G>A,p.A240T,1086950,2,Substitution - Missense
+240,c.719C>T,p.A240V,4506403,1,Substitution - Missense
+241,c.721A>G,p.I241V,3879044,1,Substitution - Missense
+,c.116-1G>A,p.?,5738201,1,Unknown
+,c.354+1G>A,p.?,421556,1,Unknown
+,c.44-1G>A,p.?,4431398,1,Unknown

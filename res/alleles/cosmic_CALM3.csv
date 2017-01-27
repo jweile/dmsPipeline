@@ -1,0 +1,15 @@
+Position,CDS Mutation,AA Mutation,Mutation ID (COSM),Count,Type
+9,c.27G>C,p.Q9H,459921,1,Substitution - Missense
+10,c.30T>G,p.I10M,5718213,2,Substitution - Missense
+23,c.69T>G,p.D23E,3769869,1,Substitution - Missense
+30,c.88A>T,p.T30S,319216,1,Substitution - Missense
+36,c.108G>A,p.V36V,998445,1,Substitution - coding silent
+80,c.240A>C,p.T80T,4079587,1,Substitution - coding silent
+81,c.238_241delACAG,p.D81fs*28,1665389,1,Deletion - Frameshift
+91,c.271C>T,p.R91C,4668914,1,Substitution - Missense
+105,c.313G>C,p.E105Q,211904,1,Substitution - Missense
+107,c.320G>A,p.R107H,4435102,1,Substitution - Missense
+126,c.378C>T,p.I126I,4491301,1,Substitution - coding silent
+131,c.393C>T,p.I131I,998446,1,Substitution - coding silent
+145,c.435G>C,p.M145I,69994,1,Substitution - Missense
+,c.35-6C>T,p.?,5942815,1,Unknown
