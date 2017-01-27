@@ -6,12 +6,15 @@ source("lib/cliargs.R")
 source("lib/liblogging.R")
 source("lib/resultfile.R")
 source("lib/trackdrawer.R")
+source("lib/amasLite.R")
 
 
 pdb.acc <- getArg("accession",default="3uip")
 main.chain <- getArg("chain",default="A")
 
 outdir <- getArg("outdir",default="workspace/test/")
+
+alFile <- getArg("alignment",default="res/UBE2I_alignment.fa")
 
 
 #Initialize logger
@@ -53,6 +56,12 @@ query.pdb <- function(pdb.acc,pdb.file) {
 	}
 }
 
+##############
+# FIXME: GetArea have changed their webservice.
+# Not only is the post request throwing an error,
+# But also the response is now an HTML doc!
+#############
+
 #query getarea for solvent accessibility
 query.getarea <- function(pdb.file) {
 	getarea.url <- "http://curie.utmb.edu/cgi-bin/getarea.cgi"
@@ -63,7 +72,7 @@ query.getarea <- function(pdb.file) {
 		email="jochen.weile@mail.utoronto.ca",
 		Method="2",
 		PDBfile=upload_file(pdb.file)
-	))		
+	))
 	if (http_status(htr)$category == "Success") {
 		#parse getarea output
 		con <- textConnection(content(htr,"text"))
@@ -78,8 +87,9 @@ query.getarea <- function(pdb.file) {
 			relative.acc=as.numeric(rawtable[,8])/100
 		))
 	} else {
-		logger$fatal("Unable tor retrieve GETAREA results")
-		stop("Unable to retrieve GETAREA results")
+		errMsg <- http_status(htr)$category
+		logger$fatal(paste("Unable to retrieve GETAREA results:",errMsg))
+		stop(paste("Unable to retrieve GETAREA results:",errMsg))
 	}
 }
 
@@ -177,7 +187,18 @@ burial.all <- burial[as.character(allpos),]
 rownames(burial.all) <- burial.all$pos <- allpos
 
 
+#Obtain conservation track
+amas <- new.amasLite()
+cons <- amas$run(alFile)
+
+
 html$figure(function() {
+
+	layout(rbind(1,2),heights=c(1,2))
+	op <- par(mar=c(0,4,4,1)+1)
+	pal <- colorRampPalette(c("saddlebrown","gold"))(12)
+	barplot(cons,col=pal[cons+1],border=NA,space=0,axes=FALSE)
+	par(mar=c(5,4,0,1)+.1)
 	td <- new.trackdrawer(l=nrow(burial.all))
 	td$add.ss.track(burial.all$ss)
 	td$add.track(burial.all$relative.acc,"Accessibility","steelblue3")
@@ -185,6 +206,9 @@ html$figure(function() {
 		td$add.track(burial.all[,paste0("rel.burial.",oc)],oc,"orange",maxVal=1)
 	}
 	td$draw()
+	par(op)
 },paste0(outdir,"strucfeats_",pdb.acc),15,5)
+
+html$shutdown()
 
 logger$info("Done.")
