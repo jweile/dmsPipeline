@@ -199,10 +199,9 @@ logger$info("Drawing ROC/PRC plots")
 #ROC & PRC CURVES #
 ###################
 
-# pdf(paste0(outdir,"spottingROC.pdf"),4,12)
 html$subsection("ROC and PRC curves")
 html$figure(function(){
-	op <- par(mfrow=c(5,2))
+	op <- par(mfrow=c(4,2))
 	# BARCODED
 	inner.ids <- intersect(spotting$id,barcoded$id)
 	inner <- data.frame(
@@ -214,9 +213,9 @@ html$figure(function(){
 
 	rd <- roc.data(truth=(inner$spotting >= 0.75),scores=inner$screen)
 	draw.roc(rd,main="BarSEQ")
-	text(0.5,0.5,sprintf("AUROC = %.02f",auroc(rd)))
+	text(50,50,sprintf("AUROC = %.02f",auroc(rd)))
 	draw.prc(rd)
-	text(0.5,0.5,sprintf("AUPRC = %.02f",auprc(rd)))
+	text(50,50,sprintf("AUPRC = %.02f",auprc(rd)))
 
 
 	#REGSEQ
@@ -230,9 +229,9 @@ html$figure(function(){
 
 	rd <- roc.data(truth=(inner$spotting >= 0.75),scores=inner$screen)
 	draw.roc(rd,main="RegSEQ")
-	text(0.5,0.5,sprintf("AUROC = %.02f",auroc(rd)))
+	text(50,50,sprintf("AUROC = %.02f",auroc(rd)))
 	draw.prc(rd)
-	text(0.5,0.5,sprintf("AUPRC = %.02f",auprc(rd)))
+	text(50,50,sprintf("AUPRC = %.02f",auprc(rd)))
 
 	#JOINT SCORES
 	inner.ids <- intersect(names(spottingByMut),joint.only$mut)
@@ -245,25 +244,25 @@ html$figure(function(){
 
 	rd <- roc.data(truth=(inner$spotting >= 0.75),scores=inner$screen)
 	draw.roc(rd,main="Joint screens")
-	text(0.5,0.5,sprintf("AUROC = %.02f",auroc(rd)))
+	text(50,50,sprintf("AUROC = %.02f",auroc(rd)))
 	draw.prc(rd)
-	text(0.5,0.5,sprintf("AUPRC = %.02f",auprc(rd)))
+	text(50,50,sprintf("AUPRC = %.02f",auprc(rd)))
 
 	#INFERRED SCORES
-	inferred.only <- joint.imp[with(joint.imp,is.na(screen.score) & (giImputeAvail | mmAverageAvail)),]
-	inner.ids <- intersect(names(spottingByMut),inferred.only$mut)
-	inner <- data.frame(
-		spotting=spottingByMut[inner.ids],
-		screen=inferred.only[inner.ids,"predicted.score"],
-		screen.sd=rep(0.4285,length(inner.ids))
-	)
-	rownames(inner) <- inner.ids
+	# inferred.only <- joint.imp[with(joint.imp,is.na(screen.score) & (giImputeAvail | mmAverageAvail)),]
+	# inner.ids <- intersect(names(spottingByMut),inferred.only$mut)
+	# inner <- data.frame(
+	# 	spotting=spottingByMut[inner.ids],
+	# 	screen=inferred.only[inner.ids,"predicted.score"],
+	# 	screen.sd=rep(0.4285,length(inner.ids))
+	# )
+	# rownames(inner) <- inner.ids
 
-	rd <- roc.data(truth=(inner$spotting >= 0.75),scores=inner$screen)
-	draw.roc(rd,main="Inferred")
-	text(0.5,0.5,sprintf("AUROC = %.02f",auroc(rd)))
-	draw.prc(rd)
-	text(0.5,0.5,sprintf("AUPRC = %.02f",auprc(rd)))
+	# rd <- roc.data(truth=(inner$spotting >= 0.75),scores=inner$screen)
+	# draw.roc(rd,main="Inferred")
+	# text(50,50,sprintf("AUROC = %.02f",auroc(rd)))
+	# draw.prc(rd)
+	# text(50,50,sprintf("AUPRC = %.02f",auprc(rd)))
 
 	#ULTIMATE SCORES
 	# inferred.only <- joint.imp[with(joint.imp,is.na(screen.score) & (posAverageAvail | mmAverageAvail)),]
@@ -277,13 +276,12 @@ html$figure(function(){
 
 	rd <- roc.data(truth=(inner$spotting >= 0.75),scores=inner$screen)
 	draw.roc(rd,main="Regularized")
-	text(0.5,0.5,sprintf("AUROC = %.02f",auroc(rd)))
+	text(50,50,sprintf("AUROC = %.02f",auroc(rd)))
 	draw.prc(rd)
-	text(0.5,0.5,sprintf("AUPRC = %.02f",auprc(rd)))
+	text(50,50,sprintf("AUPRC = %.02f",auprc(rd)))
 
 	par(op)
-},paste0(outdir,"spottingROC"),4,12)
-# invisible(dev.off())
+},paste0(outdir,"spottingROC"),4,10)
 
 html$shutdown()
 

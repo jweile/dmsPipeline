@@ -27,16 +27,16 @@ draw.roc <- function(data,col="steelblue3",main="",lwd=2,add=FALSE) {
 	# data <- na.omit(data)
 	if (add) {
 		lines(
-			data[,"fpr.fall"],data[,"tpr.sens"],
+			100*data[,"fpr.fall"],100*data[,"tpr.sens"],
 			col=col,lwd=lwd
 		)
 	} else {
 		plot(
-			data[,"fpr.fall"],data[,"tpr.sens"],
+			100*data[,"fpr.fall"],100*data[,"tpr.sens"],
 			type="l",
-			xlab="FPR (1-specificity)", ylab="TPR (sensitivity)",
+			xlab="False positive rate (%)\n(= 100%-specificity)", ylab="Sensitivity or True positive rate (%)",
 			main=main,
-			xlim=c(0,1),ylim=c(0,1),col=col,lwd=lwd
+			xlim=c(0,100),ylim=c(0,100),col=col,lwd=lwd
 		)
 	}
 }
