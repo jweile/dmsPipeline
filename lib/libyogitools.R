@@ -207,6 +207,11 @@ combo <- function(l) {
 	}))
 }
 
+#adds alpha channel to a predefined color
+colAlpha <- function(color, alpha) {
+    do.call(rgb,as.list(c(col2rgb(color)[,1],alpha=alpha*255,maxColorValue=255)))
+}
+
 
 ###
 # This object can be used to create cluster maps
