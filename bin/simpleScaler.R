@@ -9,7 +9,7 @@ options(stringsAsFactors=FALSE)
 #get output directory
 outdir <- getArg("outdir",default="workspace/test/")
 #get input file
-infile <- getArg("infile",default="input/compl_tileSEQ_results_UBE2I.csv")
+infile <- getArg("infile",default="workspace/test/compl_tileSEQ_results_UBE2I.csv")
 #get gene name
 geneName <- getArg("geneName",default="UBE2I")
 
@@ -35,9 +35,12 @@ transf <- with(data,{
 	med.stop <- median(mean.lphi[stop.is],na.rm=TRUE)
 	med.syn <- median(mean.lphi[syn.is],na.rm=TRUE)
 	denom <- med.syn - med.stop
+	sd <- bsd/denom
 	cbind(
 		score=(mean.lphi - med.stop)/denom,
-		sd=bsd/denom
+		sd=sd,
+		df=df,
+		se=sd/sqrt(df)
 	)
 })
 

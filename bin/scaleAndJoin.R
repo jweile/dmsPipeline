@@ -39,6 +39,8 @@ multi.muts <- ltri[regexpr(",",ltri$mut) > 0,]
 ltri <- ltri[regexpr(",",ltri$mut) < 1,]
 rownames(ltri) <- ltri$mut
 
+ccbr$se <- with(ccbr,bsd/sqrt(df))
+
 
 #######################################
 # Find transformation between screens #
@@ -50,8 +52,12 @@ ltriVccbr <- data.frame(
 	mut=common.muts,
 	ltri.score=ltri[common.muts,"score"],
 	ltri.sd=ltri[common.muts,"sd"],
+	ltri.se=ltri[common.muts,"se"],
+	ltri.df=ltri[common.muts,"df"],
 	ccbr.score=ccbr[common.muts,"mean.lphi"],
-	ccbr.sd=ccbr[common.muts,"bsd"]
+	ccbr.sd=ccbr[common.muts,"bsd"],
+	ccbr.se=ccbr[common.muts,"se"],
+	ccbr.df=ccbr[common.muts,"df"]
 )
 splinetable <- with(ltriVccbr,data.frame(
 	ltri=ltri.score,
@@ -71,11 +77,11 @@ logger$info(" -> Drawing plot")
 html$subsection("Scaling Input")
 html$figure(function(){
 	plot(NA,type="n",
-		xlim=c(-2,1),ylim=c(-.5,3),
+		xlim=c(-2,1),ylim=c(-.5,2.5),
 		xlab="RegSEQ Screen Fitness Score",ylab="BarSEQ Screen Fitness Score"
 	)
-	with(ltriVccbr,arrows(ccbr.score-ccbr.sd/2,ltri.score,ccbr.score+ccbr.sd/2,ltri.score,length=.01,code=3,angle=90))
-	with(ltriVccbr,arrows(ccbr.score,ltri.score-ltri.sd/2,ccbr.score,ltri.score+ltri.sd/2,length=.01,code=3,angle=90))
+	with(ltriVccbr,arrows(ccbr.score-ccbr.se,ltri.score,ccbr.score+ccbr.se,ltri.score,length=.01,code=3,angle=90))
+	with(ltriVccbr,arrows(ccbr.score,ltri.score-ltri.se,ccbr.score,ltri.score+ltri.se,length=.01,code=3,angle=90))
 	abline(h=0:1,col=c("firebrick3","chartreuse3"))
 	#add spline to plot
 	lines(x,y,col="blue",lty="dashed",lwd=2)
@@ -103,6 +109,7 @@ ccbr.trans <- t(apply(ltriVccbr[,-1],1,function(row) {
 	transf(m=row[["ccbr.score"]],sd=row[["ccbr.sd"]],z=z)
 }))
 ltriVccbr <- cbind(ltriVccbr,ccbr.trans=ccbr.trans)
+ltriVccbr$ccbr.trans.se <- with(ltriVccbr,ccbr.trans.sd/sqrt(ccbr.df))
 
 
 logger$info(" -> Drawing plot")
@@ -112,11 +119,11 @@ logger$info(" -> Drawing plot")
 html$subsection("Scaling output")
 html$figure(function(){
 	plot(NA,type="n",
-		xlim=c(-.5,3),ylim=c(-.5,3),
+		xlim=c(-.5,2.5),ylim=c(-.5,2.5),
 		xlab="Transformed RegSEQ Screen Fitness Score",ylab="BarSEQ Screen Fitness Score"
 	)
-	with(ltriVccbr,arrows(ccbr.trans.m-ccbr.trans.sd*5/2,ltri.score,ccbr.trans.m+ccbr.trans.sd*5/2,ltri.score,length=.01,code=3,angle=90))
-	with(ltriVccbr,arrows(ccbr.trans.m,ltri.score-ltri.sd/2,ccbr.trans.m,ltri.score+ltri.sd/2,length=.01,code=3,angle=90))
+	with(ltriVccbr,arrows(ccbr.trans.m-ccbr.trans.se,ltri.score,ccbr.trans.m+ccbr.trans.se,ltri.score,length=.01,code=3,angle=90))
+	with(ltriVccbr,arrows(ccbr.trans.m,ltri.score-ltri.se,ccbr.trans.m,ltri.score+ltri.se,length=.01,code=3,angle=90))
 	abline(h=0:1,v=0:1,col=c("firebrick3","chartreuse3"))
 },paste0(outdir,"scoreTransformationOutput"))
 # invisible(dev.off())
@@ -132,6 +139,7 @@ ccbr.all.trans <- t(apply(ccbr[,-1],1,function(row) {
 	transf(m=row[["mean.lphi"]],sd=row[["bsd"]],z=z)
 }))
 ccbr <- cbind(ccbr,score=ccbr.all.trans)
+ccbr$score.se <- with(ccbr,score.sd/sqrt(df))
 
 ub.outfile <- paste0(outdir,"compl_tileSEQ_results_UBE2I_transformed.csv")
 write.table(ccbr,ub.outfile,sep=",",row.names=FALSE)
@@ -144,6 +152,8 @@ sumo.trans <- t(apply(sumo[,-1],1,function(row) {
 	transf(m=row[["mean.lphi"]],sd=row[["bsd"]],z=z)
 }))
 sumo <- cbind(sumo,score=sumo.trans)
+sumo$score.se <- with(sumo,score.sd/sqrt(df))
+
 
 #Write results for SUMO1
 sumo.outfile <- paste0(outdir,"compl_tileSEQ_results_SUMO1_transformed.csv")
@@ -160,8 +170,8 @@ html$link.data(sumo.outfile)
 logger$info("Joining TileSEQ and BarSEQ data")
 
 #Build complete joint table
-join.datapoints <- function(ms,sds) {
-	ws <- (1/sds)/sum(1/sds)
+join.datapoints <- function(ms,sds,ses) {
+	ws <- (1/ses)/sum(1/ses)
 	mj <- sum(ws*ms)
 	vj <- sum(ws*(sds^2+ms^2)) -mj^2
 	c(mj=mj,sj=sqrt(vj))
@@ -174,19 +184,21 @@ joint.data <- as.df(lapply(allmuts, function(m) {
 		#and also present in the ccbr set
 		if (m %in% ccbr$mut && !is.na(ccbr[m,"score.m"]) && !is.infinite(ccbr[m,"score.m"])){#in both
 			vs <- c(ltri[m,"score"],ccbr[m,"score.m"])
-			sds <- c(ltri[m,"sd"],ccbr[m,"score.sd"]*5)
-			joint <- join.datapoints(vs,sds)
-			list(mut=m,score=joint[["mj"]],sd=joint[["sj"]])
+			sds <- c(ltri[m,"sd"],ccbr[m,"score.sd"])
+			ses <- c(ltri[m,"se"],4*ccbr[m,"score.se"])
+			dfs <- ltri[m,"df"]+ccbr[m,"df"]
+			joint <- join.datapoints(vs,sds,ses)
+			list(mut=m,score=joint[["mj"]],sd=joint[["sj"]],df=dfs)
 		} else {#or only in ltri
-			c(list(mut=m),ltri[m,c("score","sd"),drop=TRUE])
+			c(list(mut=m),ltri[m,c("score","sd","df"),drop=TRUE])
 		}
 	} else {
 		#if it is only in the ccbr set
 		if (m %in% ccbr$mut && !is.na(ccbr[m,"score.m"]) && !is.infinite(ccbr[m,"score.m"])){#only in ccbr
-			list(mut=m,score=ccbr[m,"score.m"],sd=ccbr[m,"score.sd"]*5)
+			list(mut=m,score=ccbr[m,"score.m"],sd=ccbr[m,"score.sd"],df=ccbr[m,"df"])
 		} else {#if it's NA or infinite in both
 			# cat("Excluding",m,"\n")
-			list(mut=m,score=NA,sd=NA)
+			list(mut=m,score=NA,sd=NA,df=NA)
 		}
 	}
 }))
@@ -195,6 +207,8 @@ joint.data <- joint.data[!is.na(joint.data$score),]
 
 #Re-add multimutants
 joint.all <- rbind(joint.data,multi.muts[,-4])
+
+joint.all$se <- with(joint.all,sd/sqrt(df))
 
 #########################
 # Write results to file #

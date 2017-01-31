@@ -85,6 +85,7 @@ featable$mut <- with(featable,paste(wt.aa,pos,mut.aa,sep=""))
 
 featable$score <- sapply(featable$mut,function(m) screen.data[m,"score"])
 featable$sd <- sapply(featable$mut,function(m) screen.data[m,"sd"])
+featable$df <- sapply(featable$mut,function(m) screen.data[m,"df"])
 
 featable$score[featable$wt.aa == featable$mut.aa] <- 1
 featable$sd[featable$wt.aa == featable$mut.aa] <- 0.0001
@@ -116,8 +117,8 @@ featable$posAverage <- sapply(1:nrow(featable),function(k) {
 		screen.singles$score[is]
 	} else {
 		scores <- screen.singles$score[is]
-		sds <- screen.singles$sd[is]
-		weights <- (1/sds)/sum(1/sds)
+		ses <- screen.singles$se[is]
+		weights <- (1/ses)/sum(1/ses)
 		sum(scores * weights)
 	}
 })
@@ -306,7 +307,7 @@ logger$info("Performing RandomForest Imputation")
 
 library("randomForest")
 
-testfeat <- testable[,-c(4,5,6)]
+testfeat <- testable[,-c(4,5,6,7)]
 testscores <- testable[,"score"]
 z <- randomForest(testfeat,testscores,importance=TRUE)
 
@@ -396,28 +397,38 @@ html$figure(function(){
 logger$info("Regularizing and completing data using prediction")
 
 #Build complete joint table
-join.datapoints <- function(ms,sds) {
-	ws <- (1/sds)/sum(1/sds)
+join.datapoints <- function(ms,sds,ses) {
+	ws <- (1/ses)/sum(1/ses)
 	mj <- sum(ws*ms)
 	vj <- sum(ws*(sds^2+ms^2)) -mj^2
 	c(mj=mj,sj=sqrt(vj))
 }
 
 
-score.table <- data.frame(mut=featable$mut,screen.score=featable$score,screen.sd=featable$sd)
+score.table <- data.frame(mut=featable$mut,screen.score=featable$score,
+	screen.sd=featable$sd,df=featable$df)
 
-feat.in <- featable[,-c(4,5,6)]
+feat.in <- featable[,-c(4,5,6,7)]
 score <- predict(z,feat.in)
 score.table$predicted.score <- score
 score.table$joint.score <- score
 score.table$joint.sd <- rmsd
+score.table$joint.se <- rmsd
 for (i in which(!is.na(featable$score))) {
-	vs <- c(pred=score[[i]],screen=featable$score[[i]])
-	ss <- c(pred=rmsd,screen=featable$sd[[i]])
-	joint <- join.datapoints(vs,ss)
-	score[[i]] <- joint[["mj"]]
-	score.table$joint.score[[i]] <- joint[["mj"]]
-	score.table$joint.sd[[i]] <- joint[["sj"]]
+	if (featable[i,"mut.aa"]==featable[i,"wt.aa"]) {
+		score.table$joint.score[[i]] <- featable$score[[i]]
+		score.table$joint.sd[[i]] <- featable$sd[[i]]
+		score.table$joint.se[[i]] <- featable$sd[[i]]
+	} else {
+		vs <- c(pred=score[[i]],screen=featable$score[[i]])
+		sds <- c(pred=rmsd,screen=featable$sd[[i]])
+		ses <- c(pred=rmsd,screen=featable$sd[[i]]/sqrt(featable$df[[i]]))
+		joint <- join.datapoints(vs,sds,ses)
+		score[[i]] <- joint[["mj"]]
+		score.table$joint.score[[i]] <- joint[["mj"]]
+		score.table$joint.sd[[i]] <- joint[["sj"]]
+		score.table$joint.se[[i]] <- joint[["sj"]]/sqrt(featable$df[[i]])
+	}
 }
 
 logger$info("Writing result to file.")

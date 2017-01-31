@@ -151,7 +151,8 @@ sdVpred <- 10^cbind(empiric=splinemat$logsd,model=predict(z,splinemat[,-1]))
 bnl <- function(pseudo.n,n,model.sd,empiric.sd) {
 	sqrt((pseudo.n * model.sd^2 + (n - 1) * empiric.sd^2)/(pseudo.n + n - 2))
 }
-all.data$bsd <- bnl(6,3,sdVpred[,"model"],sdVpred[,"empiric"])
+all.data$bsd <- bnl(3,3,sdVpred[,"model"],sdVpred[,"empiric"])
+all.data$df <- 6
 
 logger$info("--> Visualizing output")
 # pdf(paste0(outdir,"compTS_errorRegularizationOutput.pdf"),5,5)
@@ -260,21 +261,25 @@ join.datapoints <- function(ms,sds) {
 mtable <- as.df(tapply(1:nrow(good.data),good.data$mut,function(is) {
 	if (length(is) == 1) {
 		return(with(good.data,
-			list(mut=mut[is],score=score[is],sd=score.bsd[is],se=score.bsd[is]/sqrt(3))
+			list(mut=mut[is],score=score[[is]],sd=score.bsd[[is]],se=score.bsd[[is]]/sqrt(df[[is]]),df=df[[is]])
 		))
 	}
 	scores <- good.data$score[is]
 	sds <- good.data$score.bsd[is]
+	dfs <- good.data$df[is]
 
 	nas <- is.na(scores) | is.na(sds)
 	scores <- scores[!nas]
 	sds <- sds[!nas]
+	dfs <- dfs[!nas]
 
+
+	jdf <- 3 + sum(dfs)/2
 	j <- join.datapoints(scores,sds)
-	se <- j[["sj"]]/sqrt(3*length(scores))
+	se <- j[["sj"]]/sqrt(jdf)
 
 	return(with(good.data,
-		list(mut=mut[is[[1]]],score=j[["mj"]],sd=j[["sj"]],se=se)
+		list(mut=mut[is[[1]]],score=j[["mj"]],sd=j[["sj"]],se=se,df=jdf)
 	))
 }))
 

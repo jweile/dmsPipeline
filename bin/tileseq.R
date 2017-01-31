@@ -149,7 +149,7 @@ bnl <- function(pseudo.n,n,model.sd,empiric.sd) {
 	sqrt((pseudo.n * model.sd^2 + (n - 1) * empiric.sd^2)/(pseudo.n + n - 2))
 }
 
-bayes.sd <- bnl(4,2,sdVpred[,"model"],sdVpred[,"empiric"])
+bayes.sd <- bnl(2,2,sdVpred[,"model"],sdVpred[,"empiric"])
 
 logger$info("Plotting Error Regularization Results")
 
@@ -170,6 +170,7 @@ html$figure(function(){
 
 ccbr.log$bsd <- bayes.sd
 ccbr.log$minBC <- ccbr3$minBC
+ccbr.log$df <- 4
 
 #PLOT SYNONYMOUS AND STOP DISTRIBUTIONS
 
