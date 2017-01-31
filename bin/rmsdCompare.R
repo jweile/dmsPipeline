@@ -82,6 +82,8 @@ html$figure(function(){
 
 outfile <- paste0(outdir,"rmsdcompare.csv")
 write.table(infotable,outfile,sep=",",quote=FALSE,row.names=FALSE)
+html$subsection("RMSD table")
+html$link.data(outfile)
 
 html$shutdown()
 
