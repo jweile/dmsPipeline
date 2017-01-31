@@ -66,7 +66,8 @@ html$figure(function(){
 	inner <- data.frame(
 		spotting=spotting[inner.ids,"spotting"],
 		screen=barcoded[inner.ids,"score"],
-		screen.sd=barcoded[inner.ids,"score.bsd"]
+		screen.sd=barcoded[inner.ids,"score.bsd"],
+		screen.se=barcoded[inner.ids,"score.bsd"]/sqrt(barcoded[inner.ids,"df"])
 	)
 	rownames(inner) <- inner.ids
 
@@ -74,9 +75,9 @@ html$figure(function(){
 		x <- jitter(spotting)
 		plot(x,screen,pch=20,
 			xlab="Spotting Assay Score",ylab="Screen Score",
-			col="steelblue3",main="BarSEQ Screen"
+			col="steelblue3",main="BarSeq Screen"
 		)
-		arrows(x,screen+screen.sd,x,screen-screen.sd,
+		arrows(x,screen+screen.se,x,screen-screen.se,
 			angle=90,length=0.01,code=3,col="steelblue3"
 		)
 		text(0.5,1.5,sprintf("SCC = %.02f",cor(spotting,screen,method="spearman")))
@@ -87,7 +88,8 @@ html$figure(function(){
 	inner <- data.frame(
 		spotting=spottingByMut[inner.ids],
 		screen=regseq[inner.ids,"mean.lphi"],
-		screen.sd=regseq[inner.ids,"bsd"]*5
+		screen.sd=regseq[inner.ids,"bsd"],
+		screen.se=regseq[inner.ids,"bsd"]/sqrt(regseq[inner.ids,"df"])
 	)
 	rownames(inner) <- inner.ids
 
@@ -95,9 +97,9 @@ html$figure(function(){
 		x <- jitter(spotting)
 		plot(x,screen,pch=20,
 			xlab="Spotting Assay Score",ylab="Screen Score",
-			col="firebrick3",main="RegSEQ Screen"
+			col="firebrick3",main="TileSeq Screen"
 		)
-		arrows(x,screen+screen.sd,x,screen-screen.sd,
+		arrows(x,screen+screen.se,x,screen-screen.se,
 			angle=90,length=0.01,code=3,col="firebrick3"
 		)
 		text(0.5,0,sprintf("SCC = %.02f",cor(spotting,screen,method="spearman")))
@@ -108,7 +110,8 @@ html$figure(function(){
 	inner <- data.frame(
 		spotting=spottingByMut[inner.ids],
 		screen=joint.only[inner.ids,"screen.score"],
-		screen.sd=joint.only[inner.ids,"screen.sd"]
+		screen.sd=joint.only[inner.ids,"screen.sd"],
+		screen.se=joint.only[inner.ids,"screen.sd"]/joint.only[inner.ids,"df"]
 	)
 	rownames(inner) <- inner.ids
 
@@ -118,7 +121,7 @@ html$figure(function(){
 			xlab="Spotting Assay Score",ylab="Joint Screen Score",
 			col="purple",main="Joint Scores"
 		)
-		arrows(x,screen+screen.sd,x,screen-screen.sd,
+		arrows(x,screen+screen.se,x,screen-screen.se,
 			angle=90,length=0.01,code=3,col="purple"
 		)
 		text(0.5,1.5,sprintf("SCC = %.02f",cor(spotting,screen,method="spearman")))
@@ -129,10 +132,12 @@ html$figure(function(){
 	impctrl <- with(spotting,mut[category=="imputation" & Sanger])
 	imputed.only <- joint.imp[with(joint.imp,(mut %in% impctrl) & !(giImputeAvail | mmAverageAvail)),]
 	inner.ids <- intersect(names(spottingByMut),imputed.only$mut)
+	rmsd <- joint.imp[which(is.na(joint.imp$screen.score))[[1]],"joint.sd"]
 	inner <- data.frame(
 		spotting=spottingByMut[inner.ids],
 		screen=imputed.only[inner.ids,"predicted.score"],
-		screen.sd=rep(0.4285,length(inner.ids))
+		screen.sd=rmsd,
+		screen.se=rmsd
 	)
 	rownames(inner) <- inner.ids
 
@@ -142,7 +147,7 @@ html$figure(function(){
 			xlab="Spotting Assay Score",ylab="Imputed Score",
 			col="orange",main="Imputed Scores"
 		)
-		arrows(x,screen+screen.sd,x,screen-screen.sd,
+		arrows(x,screen+screen.se,x,screen-screen.se,
 			angle=90,length=0.01,code=3,col="orange"
 		)
 		text(0.5,0.8,sprintf("SCC = %.02f",cor(spotting,screen,method="spearman")))
@@ -154,7 +159,8 @@ html$figure(function(){
 	inner <- data.frame(
 		spotting=spottingByMut[inner.ids],
 		screen=joint.imp[inner.ids,"joint.score"],
-		screen.sd=joint.imp[inner.ids,"joint.sd"]
+		screen.sd=joint.imp[inner.ids,"joint.sd"],
+		screen.se=joint.imp[inner.ids,"joint.sd"]/joint.imp[inner.ids,"df"]
 	)
 	rownames(inner) <- inner.ids
 
@@ -164,7 +170,7 @@ html$figure(function(){
 			xlab="Spotting Assay Score",ylab="Regularized Score",
 			col="chartreuse3",main="Regularized Scores"
 		)
-		arrows(x,screen+screen.sd,x,screen-screen.sd,
+		arrows(x,screen+screen.se,x,screen-screen.se,
 			angle=90,length=0.01,code=3,col="chartreuse3"
 		)
 		text(0.5,1.5,sprintf("SCC = %.02f",cor(spotting,screen,method="spearman")))
@@ -176,10 +182,12 @@ html$figure(function(){
 	# Completeness of each subset
 	############
 	completeness <- c(
-		BarSEQ=length(unique(barcoded$mut[regexpr("^\\w\\d+\\w$",barcoded$mut) > 0]))/nrow(joint.imp),
-		RegSEQ=length(unique(regseq$mut[regexpr("^\\w\\d+\\w$",regseq$mut) > 0 & is.finite(regseq$mean.lphi)]))/nrow(joint.imp),
+		# BarSeq=length(unique(barcoded$mut[regexpr("^\\w\\d+\\w$",barcoded$mut) > 0]))/nrow(joint.imp),
+		# TileSeq=length(unique(regseq$mut[regexpr("^\\w\\d+\\w$",regseq$mut) > 0 & is.finite(regseq$mean.lphi) & !is.na(regseq$mean.lphi)]))/nrow(joint.imp),
+		BarSeq=length(unique(barcoded$mut[regexpr("^[A-Z]\\d+[A-Z]$",barcoded$mut) > 0]))/nrow(joint.imp),
+		TileSeq=length(unique(regseq$mut[regexpr("^[A-Z]\\d+[A-Z]$",regseq$mut) > 0 & is.finite(regseq$mean.lphi) & !is.na(regseq$mean.lphi)]))/nrow(joint.imp),
 		Joint=sum(!is.na(joint.imp$screen.score))/nrow(joint.imp),
-		Inferred=with(joint.imp,sum(is.na(screen.score) & (giImputeAvail | mmAverageAvail)))/sum(is.na(joint.imp$screen.score)),
+		# Inferred=with(joint.imp,sum(is.na(screen.score) & (giImputeAvail | mmAverageAvail)))/sum(is.na(joint.imp$screen.score)),
 		Imputed=1,
 		Regularized=1
 	)
@@ -212,7 +220,7 @@ html$figure(function(){
 	rownames(inner) <- inner.ids
 
 	rd <- roc.data(truth=(inner$spotting >= 0.75),scores=inner$screen)
-	draw.roc(rd,main="BarSEQ")
+	draw.roc(rd,main="BarSeq")
 	text(50,50,sprintf("AUROC = %.02f",auroc(rd)))
 	draw.prc(rd)
 	text(50,50,sprintf("AUPRC = %.02f",auprc(rd)))
@@ -228,7 +236,7 @@ html$figure(function(){
 	rownames(inner) <- inner.ids
 
 	rd <- roc.data(truth=(inner$spotting >= 0.75),scores=inner$screen)
-	draw.roc(rd,main="RegSEQ")
+	draw.roc(rd,main="TileSeq")
 	text(50,50,sprintf("AUROC = %.02f",auroc(rd)))
 	draw.prc(rd)
 	text(50,50,sprintf("AUPRC = %.02f",auprc(rd)))

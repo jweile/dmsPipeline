@@ -10,6 +10,7 @@ source("lib/liblogging.R")
 
 
 outdir <- getArg("outdir",default="workspace/test/")
+# outdir <- getArg("outdir",default="workspace/20170130-215857/")
 imgdir <- getArg("imgdir",default="~/projects/spotting/complImg/final")
 
 #Init logger
@@ -88,8 +89,8 @@ drawFigure <- function(main.scores,filebase=imgdir) {
 	xs <- with(main.scores,barplot(
 		score,
 		ylim=c(
-			min(c(-.5,score),na.rm=TRUE)-max(sd,na.rm=TRUE)/2,
-			max(score,na.rm=TRUE)+max(sd,na.rm=TRUE)/2
+			min(c(-.5,score),na.rm=TRUE)-max(se,na.rm=TRUE),
+			max(score,na.rm=TRUE)+max(se,na.rm=TRUE)
 		),
 		ylab="screen score",
 		names.arg=mut,
@@ -97,7 +98,7 @@ drawFigure <- function(main.scores,filebase=imgdir) {
 		border="NA"
 	))
 	barwidth <- xs[2,1]-xs[1,1]
-	with(main.scores,arrows(xs,score-sd/2,xs,score+sd/2,length=0.05,angle=90,code=3,col="gray40"))
+	with(main.scores,arrows(xs,score-se,xs,score+se,length=0.05,angle=90,code=3,col="gray40"))
 	if (any(is.na(main.scores$score))) {
 		is <- which(is.na(main.scores$score))
 		rect(xs[is]-barwidth/2,-10,xs[is]+barwidth/2,10,density=10,border=NA,col="gray")
@@ -145,6 +146,7 @@ scores <- spotting
 scores$score <- barseq[spotting$id,"score"]
 scores[which(scores$id=="UBE2I-HYC-WT1"),"score"] <- 1
 scores$sd <- barseq[spotting$id,"score.bsd"]
+scores$se <- barseq[spotting$id,"score.bsd"]/sqrt(barseq[spotting$id,"df"])
 #sort by score
 scores <- scores[order(scores$score,decreasing=TRUE),]
 
@@ -152,7 +154,8 @@ logger$info("Plotting spectrum clones")
 
 #DRAW FIGURE FOR SPECTRUM CLONES
 plotScores <- rbind(
-	data.frame(category="control",id="ctrl",plate="ctrl",well=NA,mut="Yeast WT",score=NA,spotting=1,Sanger=TRUE,Sanger.result=NA,sd=NA),
+	data.frame(category="control",id="ctrl",plate="ctrl",well=NA,
+		mut="Yeast WT",score=NA,spotting=1,Sanger=TRUE,Sanger.result=NA,sd=NA,se=NA),
 	scores[scores$category == "control" & scores$Sanger & !is.na(scores$spotting),],
 	# scores[!(scores$category %in% c("control","imputation")),]
 	scores[scores$category == "spectrum" & scores$Sanger & !is.na(scores$spotting),]
@@ -170,7 +173,8 @@ logger$info("Plotting fast clones")
 
 #DRAW FIGURE FOR FAST CLONES
 plotScores <- rbind(
-	data.frame(category="control",id="ctrl",plate="ctrl",well=NA,mut="Yeast WT",score=NA,spotting=1,Sanger=TRUE,Sanger.result=NA,sd=NA),
+	data.frame(category="control",id="ctrl",plate="ctrl",well=NA,
+		mut="Yeast WT",score=NA,spotting=1,Sanger=TRUE,Sanger.result=NA,sd=NA,se=NA),
 	scores[scores$category == "control" & scores$Sanger & !is.na(scores$spotting),],
 	scores[scores$category == "fast" & scores$Sanger & !is.na(scores$spotting),]
 )
@@ -188,6 +192,7 @@ scores <- spotting
 scores$score <- imputed[spotting$mut,"joint.score"]
 scores[which(scores$id=="UBE2I-HYC-WT1"),"score"] <- 1
 scores$sd <- imputed[spotting$mut,"joint.sd"]
+scores$se <- imputed[spotting$mut,"joint.se"]
 #sort by score
 scores <- scores[order(scores$score,decreasing=TRUE),]
 
@@ -195,7 +200,8 @@ logger$info("Plotting spectrum clones")
 
 #DRAW FIGURE FOR SPECTRUM CLONES
 plotScores <- rbind(
-	data.frame(category="control",id="ctrl",plate="ctrl",well=NA,mut="Yeast WT",score=NA,spotting=1,Sanger=TRUE,Sanger.result=NA,sd=NA),
+	data.frame(category="control",id="ctrl",plate="ctrl",well=NA,
+		mut="Yeast WT",score=NA,spotting=1,Sanger=TRUE,Sanger.result=NA,sd=NA,se=NA),
 	scores[scores$category == "control" & scores$Sanger & !is.na(scores$spotting),],
 	# scores[!(scores$category %in% c("control","imputation")),]
 	scores[scores$category == "spectrum" & scores$Sanger & !is.na(scores$spotting),]
@@ -213,7 +219,8 @@ logger$info("Plotting fast clones")
 
 #DRAW FIGURE FOR FAST CLONES
 plotScores <- rbind(
-	data.frame(category="control",id="ctrl",plate="ctrl",well=NA,mut="Yeast WT",score=NA,spotting=1,Sanger=TRUE,Sanger.result=NA,sd=NA),
+	data.frame(category="control",id="ctrl",plate="ctrl",well=NA,
+		mut="Yeast WT",score=NA,spotting=1,Sanger=TRUE,Sanger.result=NA,sd=NA,se=NA),
 	scores[scores$category == "control" & scores$Sanger & !is.na(scores$spotting),],
 	scores[scores$category == "fast" & scores$Sanger & !is.na(scores$spotting),]
 )
@@ -231,7 +238,9 @@ html$figure(function(){
 scores <- spotting
 scores$score <- imputed[spotting$mut,"predicted.score"]
 scores[which(scores$id=="UBE2I-HYC-WT1"),"score"] <- 1
-scores$sd <- .44#imputed[spotting$mut,"joint.sd"]
+# scores$sd <- .44#imputed[spotting$mut,"joint.sd"]
+scores$sd <- imputed[which(is.na(imputed$screen.score))[[1]],"joint.sd"]
+scores$se <- imputed[which(is.na(imputed$screen.score))[[1]],"joint.se"]
 #sort by score
 scores <- scores[order(scores$score,decreasing=TRUE),]
 
@@ -240,7 +249,8 @@ logger$info("Plotting imputed clones")
 
 #DRAW FIGURE FOR SPECTRUM CLONES
 plotScores <- rbind(
-	data.frame(category="control",id="ctrl",plate="ctrl",well=NA,mut="Yeast WT",score=NA,spotting=1,Sanger=TRUE,Sanger.result=NA,sd=NA),
+	data.frame(category="control",id="ctrl",plate="ctrl",well=NA,
+		mut="Yeast WT",score=NA,spotting=1,Sanger=TRUE,Sanger.result=NA,sd=NA,se=NA),
 	scores[scores$category == "control" & scores$Sanger & !is.na(scores$spotting),],
 	# scores[!(scores$category %in% c("control","imputation")),]
 	scores[scores$category == "imputation" & scores$Sanger & !is.na(scores$spotting),]
