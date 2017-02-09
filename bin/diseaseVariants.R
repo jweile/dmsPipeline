@@ -7,12 +7,13 @@ source("lib/resultfile.R")
 source("lib/liblogging.R")
 source("lib/cliargs.R")
 source("lib/libroc.R")
+source("lib/libyogitools.R")
 
 library("beeswarm")
 
 
 outdir <- getArg("outdir",default="workspace/test/")
-# outdir <- getArg("outdir",default="workspace/20170118-165353/")
+# outdir <- getArg("outdir",default="workspace/20170131-175115/")
 
 #Initialize logger
 logger <- new.logger(paste0(outdir,"diseaseVariants.log"))
@@ -26,16 +27,16 @@ geneNames <- c("CALM1","CALM2","CALM3","NCS1","TPK1","UBE2I","SUMO1")
 proteinNames <- c("CALM1","CALM1","CALM1","NCS1","TPK1","UBE2I","SUMO1")
 
 
-extract.groups <- function(x, re) {
-	matches <- regexpr(re,x,perl=TRUE)
-	start <- attr(matches,"capture.start")
-	end <- start + attr(matches,"capture.length") - 1
-	do.call(cbind,lapply(1:ncol(start), function(i) {
-		sapply(1:nrow(start),function(j){
-			if (start[j,i] > -1) substr(x[[j]],start[j,i],end[j,i]) else NA
-		})
-	}))
-}
+# extract.groups <- function(x, re) {
+# 	matches <- regexpr(re,x,perl=TRUE)
+# 	start <- attr(matches,"capture.start")
+# 	end <- start + attr(matches,"capture.length") - 1
+# 	do.call(cbind,lapply(1:ncol(start), function(i) {
+# 		sapply(1:nrow(start),function(j){
+# 			if (start[j,i] > -1) substr(x[[j]],start[j,i],end[j,i]) else NA
+# 		})
+# 	}))
+# }
 
 read.gnomad <- function(infile,geneName) {
 	aa.letters <- c(
@@ -154,7 +155,7 @@ clinvar <- clinvar[with(clinvar,validateAA(mut,gene)),]
 scores <- lapply(proteinNames,function(prot) {
 	filename <- paste0(outdir,"imputed_regularized_",prot,"_flipped_scores.csv")
 	data <- read.csv(filename)
-	with(data,data.frame(row.names=mut,score=joint.score,sd=joint.sd))
+	with(data,data.frame(row.names=mut,score=joint.score,se=joint.se))
 })
 names(scores) <- geneNames
 
@@ -292,12 +293,21 @@ html$figure(function() {
 	provean <- read.delim("res/alleles/CALM_provean.txt")
 	roc.obj2 <- roc.data(truth,10-provean$SCORE)
 	draw.prc(roc.obj2,col="blue",add=TRUE)
+	auc.provean <- auprc(roc.obj2)
 
 	polyphen <- read.csv("res/alleles/CALM_polyphen.csv")
 	roc.obj3 <- roc.data(truth,polyphen$pph2_prob)
 	draw.prc(roc.obj3,col="chartreuse3",add=TRUE)
+	auc.polyphen <- auprc(roc.obj3)
 
-	legend("bottomleft",c("DMS Atlas","PROVEAN","Polyphen-2"),lwd=2,col=c("firebrick3","blue","chartreuse3"))
+	legend("bottomleft",
+		c(
+			sprintf("DMS Atlas AUC = %.02f",auc.atlas),
+			sprintf("PROVEAN AUC = %.02f",auc.provean),
+			sprintf("Polyphen-2 AUC = %.02f",auc.polyphen)
+		),
+		lwd=2,col=c("firebrick3","blue","chartreuse3")
+	)
 
 	truth <- c(
 		rep(FALSE,sum(kgenomes$gene=="TPK1")),
