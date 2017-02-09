@@ -542,10 +542,12 @@ html$figure(function(){
 	axis(2,at=1:20,labels=rev(aas))
 	x <- sqds$pos
 	y <- length(aas) - sapply(sqds$mut.aa,function(a)which(aas==a)) + 1
-	colRamp <- colorRampPalette(c("green","red"))(11)
+	colRamp <- colorRampPalette(c("white","chartreuse3"))(11)
 	col.idx <- sapply(round(1+10*sqrt(sqds$sqd)),function(x)min(c(x,11)))
 	cols <- colRamp[col.idx]
 	# cols <- colRamp[round(10*diffs/max(diffs))+1]
+	#gray background panel
+	rect(0.5,0.5,length(wt.aa)+.5,20.5,col="gray",border=NA)
 	rect(x-.5,y-.5,x+.5,y+.5,col=cols,border=NA)
 	par(op)
 	#legend
