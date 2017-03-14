@@ -1,8 +1,8 @@
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
-all: evaluateSpotting colorizeStructure findInterfaces compensatory accCons yeastResidues codonPref diseaseVariants invitro rmsdCompare subsampling finalize
+all: evaluateSpotting colorizeStructure findInterfaces compensatory accCons yeastResidues codonPref diseaseVariants invitro evaluateRegularization subsampling finalize
 
-paper: evaluateSpotting colorizeStructure compensatory accCons yeastResidues invitro codonPref diseaseVariants rmsdCompare finalize
+paper: evaluateSpotting colorizeStructure compensatory accCons yeastResidues invitro codonPref diseaseVariants evaluateRegularization finalize
 
 #Create an output directory for this pipeline run
 outdir:
@@ -124,8 +124,9 @@ diseaseVariants: impute
 invitro: impute
 	Rscript bin/invitro.R outdir=$(OUTDIR)
 
-rmsdCompare: impute
+evaluateRegularization: impute
 	Rscript bin/rmsdCompare.R outdir=$(OUTDIR)
+	Rscript bin/evaluateRegularization.R outdir=$(OUTDIR)
 
 #Adds closing tags to the result HTML
 finalize: outdir
