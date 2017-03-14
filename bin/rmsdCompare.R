@@ -19,7 +19,7 @@ html$section("Error comparison")
 geneNames <- c("UBE2I","SUMO1","TPK1","CALM1","NCS1")
 
 doubleHist <- function(data1,data2,breaks=NULL,ymax=NULL,xlim=NULL,
-		col=c("steelblue3","orange"),ylab1="data1",ylab2="data2",xlab="",
+		col=c("steelblue3","orange"),border="black",ylab1="data1",ylab2="data2",xlab="",
 		main="") {
 
 	hc <- hist(c(data1,data2),plot=FALSE)
@@ -42,8 +42,8 @@ doubleHist <- function(data1,data2,breaks=NULL,ymax=NULL,xlim=NULL,
 	mtext(ylab1,side=2,line=3,adj=1)
 	mtext(ylab2,side=2,line=3,adj=0)
 
-	rect(breaks[-length(breaks)],0,breaks[-1],h1$density,col=col[[1]])
-	rect(breaks[-length(breaks)],0,breaks[-1],-h2$density,col=col[[2]])
+	rect(breaks[-length(breaks)],0,breaks[-1],h1$density,col=col[[1]],border=border)
+	rect(breaks[-length(breaks)],0,breaks[-1],-h2$density,col=col[[2]],border=border)
 
 }
 
@@ -63,7 +63,7 @@ html$figure(function(){
 
 		breaks <- seq(0,4,0.01)
 		doubleHist(screenSE,regSE,breaks=breaks,xlab="stderr",
-			main=geneName,xlim=c(0,1),ylab1="experimental",ylab2="regularized")
+			main=geneName,xlim=c(0,1),ylab1="experimental",ylab2="regularized",border=NA)
 
 		data.frame(
 			gene=geneName,
