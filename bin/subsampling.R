@@ -49,7 +49,7 @@ featable$cia.sumo.nc <- factor(featable$cia.sumo.nc,levels=cialevels)
 featable$cia.e1 <- factor(featable$cia.e1,levels=cialevels)
 
 testable <- featable[!is.na(featable$score),]
-testfeat <- testable[,-c(4,5,6)]
+testfeat <- testable[,-c(4,5,6,7)]
 testscores <- testable[,"score"]
 
 
@@ -160,7 +160,7 @@ testable.reach$posAverage[is.na(testable.reach$posAverage)] <- mean(testable.rea
 
 logger$info("-> Imputing")
 
-testfeat.reach <- testable.reach[,-c(4,5,6)]
+testfeat.reach <- testable.reach[,-c(4,5,6,7)]
 testscores.reach <- testable.reach[,"score"]
 
 z.reach <- randomForest(testfeat.reach[reach.is,-(6:9)],testscores.reach[reach.is])
@@ -199,7 +199,7 @@ testable.ala$posAverageAvail <- !is.na(testable.ala$posAverage)
 testable.ala$posAverage[is.na(testable.ala$posAverage)] <- mean(testable.ala$posAverage,na.rm=TRUE)
 
 logger$info("-> Imputing")
-testfeat.ala <- testable.ala[,-c(4,5,6)]
+testfeat.ala <- testable.ala[,-c(4,5,6,7)]
 testscores.ala <- testable.ala[,"score"]
 z.ala <- randomForest(testfeat.ala[ala.is,-(6:9)],testscores.ala[ala.is])
 pred <- predict(z.ala,testfeat.ala[-ala.is,-(6:9)])
@@ -240,7 +240,7 @@ random.rmsds <- mclapply(1:500,function(x) {
 	testable.random$posAverageAvail <- !is.na(testable.random$posAverage)
 	testable.random$posAverage[is.na(testable.random$posAverage)] <- mean(testable.random$posAverage,na.rm=TRUE)
 
-	testfeat.random <- testable.random[,-c(4,5,6)]
+	testfeat.random <- testable.random[,-c(4,5,6,7)]
 	testscores.random <- testable.random[,"score"]
 
 	z.random <- randomForest(testfeat.random[random.is,-(6:9)],testscores.random[random.is])
@@ -258,7 +258,7 @@ cat("\n")
 html$subsection("SNP-accessible and Alanine Scanning vs POPCode")
 html$figure(function(){
 	hist(
-		random.rmsds,breaks=seq(0.43,0.62,0.005),freq=FALSE,
+		random.rmsds,breaks=seq(0.3,0.6,0.005),freq=FALSE,
 		border=FALSE,col="gray",
 		xlab="RMSD",main="SNP-accessible mutations\nyield worse prediction performance"
 	)
@@ -344,7 +344,7 @@ goldenSNPs <- goldStandard[sapply(1:nrow(goldStandard),function(i) {
 rownames(goldenSNPs) <- goldenSNPs$mut
 
 
-testable.snp <- featable[,-c(9:12)]
+testable.snp <- featable[,-c(10:13)]
 rownames(testable.snp) <- featable$mut
 
 #Replace scores with RegSEQ scores
@@ -385,10 +385,10 @@ while(length(snps) > 0) {
 xv <- mclapply(xvplan,function(ms) {
 	training <- testable.snp[!is.na(testable.snp$score) & testable.snp$mut %in% reachable.muts,]
 	training <- training[-which(training$mut %in% ms),]
-	trainfeat <- training[,-c(4,5,6)]
+	trainfeat <- training[,-c(4,5,6,7)]
 	trainscores <- training[,"score"]
 	z <- randomForest(trainfeat,trainscores)
-	testfeat <- testable.snp[ms,-c(4,5,6)]
+	testfeat <- testable.snp[ms,-c(4,5,6,7)]
 	pred <- predict(z,testfeat)
 	gold <- goldenSNPs[ms,"score"]
 	data.frame(mut=ms,gold=gold,ccbr=ccbr[ms,"score.m"],ccbr.sd=ccbr[ms,"score.sd"],pred=pred)
@@ -424,7 +424,7 @@ regul.rmsd <- sqrt(mean((xv$gold-regul$mj)^2))
 
 #Now predict snps based on all training data
 
-testable.all <- featable[,-c(9:12)]
+testable.all <- featable[,-c(10:13)]
 rownames(testable.all) <- featable$mut
 
 #Replace scores with RegSEQ scores
@@ -453,10 +453,10 @@ testable.all$posAverage[is.na(testable.all$posAverage)] <- mean(testable.all$pos
 xv2 <- mclapply(xvplan,function(ms) {
 	training <- testable.all[!is.na(testable.all$score),]
 	training <- training[-which(training$mut %in% ms),]
-	trainfeat <- training[,-c(4,5,6)]
+	trainfeat <- training[,-c(4,5,6,7)]
 	trainscores <- training[,"score"]
 	z <- randomForest(trainfeat,trainscores)
-	testfeat <- testable.all[ms,-c(4,5,6)]
+	testfeat <- testable.all[ms,-c(4,5,6,7)]
 	pred <- predict(z,testfeat)
 	gold <- goldenSNPs[ms,"score"]
 	data.frame(mut=ms,gold=gold,ccbr=ccbr[ms,"score.m"],ccbr.sd=ccbr[ms,"score.sd"],pred=pred)
