@@ -1,3 +1,4 @@
+IMGDIR := ../spotting/complImg/final
 OUTDIR := workspace/$(shell date +"%Y%m%d-%H%M%S")/
 
 all: evaluateSpotting colorizeStructure findInterfaces compensatory accCons yeastResidues codonPref diseaseVariants invitro evaluateRegularization subsampling finalize
@@ -77,7 +78,7 @@ pickSpottingClones: scaleAndJoin
 # previous pipeline steps (barseq, tileseq, impute, etc)
 evaluateSpotting: impute pickSpottingClones
 	Rscript bin/evaluateSpotting.R outdir=$(OUTDIR)
-	Rscript bin/spottingDetail.R outdir=$(OUTDIR) imgdir=~/projects/spotting/complImg/final
+	Rscript bin/spottingDetail.R outdir=$(OUTDIR) imgdir=$(IMGDIR)
 
 #Plot the relationship between mutant fitness and surface accessibility,
 # interfacialness and conservation

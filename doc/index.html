@@ -32,7 +32,7 @@
 </head>
 <body>
 	<h1>POPCode Analysis Pipeline</h1>
-	<p>Jochen Weile, Roth Lab 2016</p>
+	<p>Jochen Weile, Roth Lab 2016, GPL</p>
 	<h2>Installation and prerequisites</h2>
 	<p>Installation requires <a href="https://www.mercurial-scm.org/">Mercurial</a> and <a href="https://www.r-project.org/">R v3.0 or higher</a>, as well as the R packages <code>hash, parallel, randomForest, beeswarm, gdata, EBImage</code> and <code>Biostrings</code>. These can be installed by opening an interactive R session and executing the following commands:
 	<code><pre>install.packages(c("hash","parallel","randomForest","beeswarm","gdata","EBImage"))
@@ -56,15 +56,26 @@ q()</pre></code>
 		<tr><td><code>geneticInteractions</code></td><td>Use double-mutant information to detect intragenic epistasis</td></tr>
 		<tr><td><code>compensatory</code></td><td>Use intragenic epistasis and C<sub>&alpha;</sub> distances to find candidate compensatory relationships</td></tr>
 		<tr><td><code>pickSpottingClones</code></td><td>Pick a set of clones to be tested in a manual spotting assay</td></tr>
-		<tr><td><code>evaluateSpotting</code></td><td>Compare the results of the manual spotting assay to the results of the previous pipeline steps (barseq, tileseq, impute, etc)</td></tr>
+		<tr><td><code>evaluateSpotting</code></td><td>
+			<p>Compare the results of the manual spotting assay to the results of the previous pipeline steps (barseq, tileseq, impute, etc)</p>
+			<p>Important note: Executing this goal requires the original image data for the spotting assays. The location of the data must be indicated by setting the <code>IMGDIR</code> variable. For example: <code><pre>make IMGDIR=../imgdata evaluateSpotting finalize</pre></code>
+			</p>
+		</td></tr>
 		<tr><td><code>accCons</code></td><td>Plot the relationship between mutant fitness and surface accessibility, interfacialness and conservation</td></tr>
 		<tr><td><code>colorizeStructure</code></td><td>Use the imputed and regularized complementation map to colorize the UBE2I crystal structure.</td></tr>
 		<tr><td><code>findInterfaces</code></td><td>Compare the Y2H and complementation data to find candidate interaction interfaces.</td></tr>
 		<tr><td><code>yeastResidues</code></td><td>Examine whether reversions to yeast AAs leads to greater fitness than expected.</td></tr>
+		<tr><td><code>codonPref</code></td><td>Examine whether codon preference has any impact on the functional score.</td></tr>
+		<tr><td><code>subsampling</code></td><td>Performs a imputation/regularization on different subsamples of the full dataset (such as SNP-accessible variants) to determine whether the full amino acid spectrum yields superior performance.</td></tr>
+		<tr><td><code>diseaseVariants</code></td><td>Runs an analysis of different known disease variants and polymorphisms to examine DMS's accuracy in disease prediction.</td></tr>
+		<tr><td><code>inVitro</code></td><td>Plots variant scores in comparison to a previous in vitro sumoylation result.</td></tr>
+		<tr><td><code>evaluateRegularization</code></td><td>Evaluates the effects of the regularization procedure and produces an overview table for quality comparison of different maps.</td></tr>
 	</table>
 	<p>
 		You can either execute all of them by simply running:
 		<code><pre>make</pre></code>
+		Or you can only run the subset of goals relevant to the paper using
+		<code><pre>make paper</pre></code>
 		Or alternatively, you can execute individual goals and their respective prerequisites using e.g.:
 		<code><pre>make geneticInteractions finalize</pre></code>
 		Note, that you should always append the finalize goal when addressing individual goals, as this is required to produce a valid output HTML file.
