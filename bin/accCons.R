@@ -43,10 +43,28 @@ provean <- provean[!is.na(provean$POSITION),]
 provean$mut <- with(provean,paste0(RESIDUE_REF,POSITION,RESIDUE_ALT))
 rownames(provean) <- provean$mut
 
+scinotExpr <- function(x, digits=2) {
+    sign <- ""
+    if (x < 0) {
+        sign <- "-"
+        x <- -x
+    }
+    exponent <- floor(log10(x))
+    if (exponent) {
+        xx <- round(x / 10^exponent, digits=digits)
+        e <- paste(" %*% 10^", as.integer(exponent), sep="")
+    } else {
+        xx <- round(x, digits=digits)
+        e <- ""
+    }
+    parse(text=paste("P == ",sign, xx, e, sep=""))
+}
+
 drawStar <- function(pval,x1,x2,y) {
 	if (pval < 0.05) {
 		lines(c(x1,x1,x2,x2),c(y-.1,y,y,y-.1))
-		text(mean(c(x1,x2)),y+.1,"*",cex=1.4)
+		# text(mean(c(x1,x2)),y+.1,"*",cex=1.4)
+		text(mean(c(x1,x2)),y+.1,scinotExpr(pval),cex=0.8)
 	}
 }
 
@@ -137,7 +155,7 @@ calculateAndPlot <- function(singles,datalabel) {
 			interface.groups,
 			cex=0.6,pch=20,
 			col=c("firebrick3","firebrick4","steelblue3","chartreuse3","gray60","gold2","gray40"),
-			ylim=c(-0.5,2.5),
+			ylim=c(-0.5,2.7),
 			ylab="mutant fitness score"
 		)
 		abline(h=0:1,col=c("firebrick2","darkolivegreen3"))
@@ -145,12 +163,20 @@ calculateAndPlot <- function(singles,datalabel) {
 
 		cVnc <- with(interface.groups,wilcox.test(SUMO,`SUMO-nc`,alternative="greater"))
 		drawStar(cVnc$p.value,1,2,2.2)
+		ncVe1 <- with(interface.groups,wilcox.test(`SUMO-nc`,E1,alternative="less"))
+		drawStar(ncVe1$p.value,2,3,2.2)#n.s.
 		sumoVe1 <- with(interface.groups,wilcox.test(SUMO,E1,alternative="greater"))
-		drawStar(sumoVe1$p.value,1,3,2.4)
+		drawStar(sumoVe1$p.value,1,2.98,2.4)
 		e1VSub <- with(interface.groups,wilcox.test(Substrate,E1,alternative="greater"))
-		drawStar(sumoVe1$p.value,3,4,2.2)
+		drawStar(e1VSub$p.value,3,4,2.2)
 		noneVhomo <- with(interface.groups,wilcox.test(None,Homodimer,alternative="greater"))
-		drawStar(sumoVe1$p.value,6,7,2.4)
+		drawStar(noneVhomo$p.value,6.02,7,2.4)
+		homoVe1 <- with(interface.groups,wilcox.test(Homodimer,E1,alternative="greater"))
+		drawStar(homoVe1$p.value,3.02,5.98,2.4)
+		homoVe3 <- with(interface.groups,wilcox.test(Homodimer,E3,alternative="greater"))
+		drawStar(homoVe3$p.value,5,6,2.2)#barely n.s.
+		homoVnc <- with(interface.groups,wilcox.test(Homodimer,`SUMO-nc`,alternative="greater"))
+		drawStar(homoVnc$p.value,2,6,2.65)
 
 	},paste0(outdir,"interfaceBurial_",datalabel),9,6)
 
