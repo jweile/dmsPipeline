@@ -8,11 +8,11 @@
 # List of mutations and their effects given in the following three vectors:
 # pos = vector of positions
 # mut.aa = vector of mutant AAs
-# socre = vector of scores
-#
+# score = vector of scores
+# error = vector of stderr values
 # a = bezier transformation intensity (with -0.5 <= a <= 0.5)
 # 
-genophenogram <- function(wt.aa, pos, mut.aa, score, a=0) {
+genophenogram <- function(wt.aa, pos, mut.aa, score, error=NULL, a=0) {
 
 	bend <- function(x,a=0) {
 		if (is.na(x)) return(NA)
@@ -67,15 +67,33 @@ genophenogram <- function(wt.aa, pos, mut.aa, score, a=0) {
 	cols[which(mut.aa==wt.aa[pos])] <- "lightgoldenrod1"
 
 	rect(x-.5,y-.5,x+.5,y+.5,col=cols,border=NA)
+
+	if (!is.null(error)) {
+		e <- .5 * error / max(error)
+		e[which(mut.aa==wt.aa[pos])] <- NA
+		segments(x-e,y-e,x+e,y+e)
+	}
+
 	par(op)
 
 	#####Legend
 	###########
 	op <- par(cex=.6,mar=c(5,0,0,4)+.1)
-	plot(NA,type="n",xlim=c(0,1),ylim=c(0,12),axes=FALSE,xlab="",ylab="")
+	plot(NA,type="n",xlim=c(-1,1),ylim=c(0,13),axes=FALSE,xlab="",ylab="")
 	rect(0,0:11,1,1:12,col=c(colRamp[1:6],colRamp[6:11]),border=NA)
-	axis(4,at=c(.5,6,11.5),labels=c(0,1,2))
-	mtext("growth score",side=4,line=2,las=3)
+	rect(0,12,1,13,col="lightgoldenrod1",border=NA)
+	if(!is.null(error)) {
+		es <- seq(0,0.5,length.out=13)*13/21
+		ys <- 0:12+0.5
+		segments(-.5-es,ys-es,-.5+es,ys+es)
+	}
+	axis(4,at=c(.5,6,11.5,12.5),labels=c(0,1,2,"wt"))
+	mtext("score",side=4,line=2,las=3,cex=0.7)
+	if (!is.null(error)){
+		me <- max(error)
+		axis(2,at=c(.5,6.5,12.5),labels=signif(c(0,me/2,me),2))
+		mtext("stderr",side=2,line=2,las=3,cex=0.7)
+	}
 	par(op)
 
 	#Summary bars

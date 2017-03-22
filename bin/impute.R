@@ -635,7 +635,12 @@ logger$info("Drawing complete genophenogram")
 # pdf(paste0(outdir,"imputed_regularized_",geneName,"_genophenogram.pdf"),19,4)
 html$subsection("Regularized and Imputed Genophenogram")
 html$figure(function(){
-	genophenogram(wt.aa,featable$pos,featable$mut.aa,score.table$joint.score)
+	genophenogram(
+		wt.aa,
+		featable$pos,
+		featable$mut.aa,score.table$joint.score,
+		error=score.table$joint.se
+	)
 },paste0(outdir,"imputed_regularized_",geneName,"_genophenogram",flptag),if(geneName=="UBE2I")19 else 16,4)
 # invisible(dev.off())
 
