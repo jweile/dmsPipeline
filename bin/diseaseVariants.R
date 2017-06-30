@@ -274,6 +274,26 @@ html$figure(function() {
 	}
 },paste0(outdir,"somaticVsPoly"),5,5)
 
+
+html$subsection("Somatic variants vs Polymorphisms (w/o NCS1)")
+html$figure(function() {
+	swarm <- list(
+		GnomAD=with(gnomad,score[gene %in% c("UBE2I","SUMO1")]),
+		COSMIC=with(cosmic,score[gene %in% c("UBE2I","SUMO1")])
+	)
+	beeswarm(swarm,pch=20,col=c("chartreuse4","orange"),
+		ylim=c(-.5,1.5),labels=c("polymorphisms","somatic tumor\nmutations"),
+		ylab="score"
+	)
+	abline(h=0:1,col=c("firebrick3","chartreuse3"))
+	bxplot(swarm,add=TRUE,col="gray40")
+	pval <- with(swarm,wilcox.test(GnomAD,COSMIC,alternative="greater"))$p.value
+	if (pval < 0.05) {
+		lines(c(1,1,2,2),c(1.1,1.2,1.2,1.1))
+		text(1.5,1.3,scinotExpr(pval))
+	}
+},paste0(outdir,"somaticVsPoly_noNCS1"),5,5)
+
 html$subsection("Precision-Recall curves")
 html$figure(function() {
 
