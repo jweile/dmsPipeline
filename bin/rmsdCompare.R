@@ -61,6 +61,11 @@ html$figure(function(){
 		screenSE <- data$screen.sd/sqrt(data$df)
 		regSE <- with(data,joint.se[!is.na(screen.score)])
 
+		deltas <- with(data,{
+			valid <- which(!is.na(screen.score))
+			abs(screen.score[valid]-joint.score[valid])
+		})
+
 		breaks <- seq(0,4,0.01)
 		doubleHist(screenSE,regSE,breaks=breaks,xlab="stderr",
 			main=geneName,xlim=c(0,1),ylab1="experimental",ylab2="regularized",border=NA)
@@ -72,7 +77,8 @@ html$figure(function(){
 			mutAchievedPercent=100*sum(!is.na(data$screen.score))/nrow(data),
 			rmsd=with(data,joint.se[which(is.na(screen.score))[[1]]]),
 			maxSDExp=max(screenSE,na.rm=TRUE),
-			maxSDReg=max(regSE,na.rm=TRUE)
+			maxSDReg=max(regSE,na.rm=TRUE),
+			overFive=100*sum(deltas > 0.05)/length(deltas)
 		)
 
 	}))
