@@ -1,1 +1,1 @@
-Installation and execution manual [here](http://dalai.mshri.on.ca/~jweile/projects/popcodePipeline/doc/).
+The installation and execution manual is [here](http://dalai.mshri.on.ca/~jweile/projects/popcodePipeline/doc/).
