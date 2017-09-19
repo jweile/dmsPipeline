@@ -304,6 +304,13 @@ singles <- singles[substr(singles$mut,1,1)!=substr(singles$mut,nchar(singles$mut
 
 calculateAndPlot(with(singles,data.frame(row.names=mut,mut=mut,score=score)),"BarSEQ")
 
+data <- read.csv(paste0(outdir,"compl_tileSEQ_results_UBE2I_transformed.csv"))
+singles <- data[regexpr(",|_",data$mut) < 1,]
+singles <- singles[regexpr("\\w\\d+\\w",singles$mut) > 0,]
+singles <- singles[substr(singles$mut,1,1)!=substr(singles$mut,nchar(singles$mut),nchar(singles$mut)),]
+
+calculateAndPlot(with(singles,data.frame(row.names=mut,mut=mut,score=score.m)),"TileSEQ")
+
 html$shutdown()
 
 logger$info("Done.")
