@@ -22,6 +22,24 @@ logger <- new.logger(paste0(outdir,"subsampling.log"))
 html <- new.resultfile(paste0(outdir,"results.html"))
 html$section("Simulate SNP-accessible mutations and Alanine scanning")
 
+
+scinotExpr <- function(x, digits=2) {
+    sign <- ""
+    if (x < 0) {
+        sign <- "-"
+        x <- -x
+    }
+    exponent <- floor(log10(x))
+    if (exponent) {
+        xx <- round(x / 10^exponent, digits=digits)
+        e <- paste(" %*% 10^", as.integer(exponent), sep="")
+    } else {
+        xx <- round(x, digits=digits)
+        e <- ""
+    }
+    parse(text=paste("P == ",sign, xx, e, sep=""))
+}
+
 ##############
 # LOAD INPUT #
 ##############
@@ -52,6 +70,9 @@ testable <- featable[!is.na(featable$score),]
 testfeat <- testable[,-c(4,5,6,7)]
 testscores <- testable[,"score"]
 
+##############################
+# PREPARE REACHABILITY INFORMATION
+################################
 
 orf <- scan("res/UBE2I_ORF.fa",what="character")[[2]]
 
@@ -97,6 +118,115 @@ reachable.muts <- do.call(c,lapply(1:length(aaseq),function(pos){
 }))
 # z <- randomForest(testfeat,testscores,importance=TRUE)
 
+
+##########
+# Test RMSD of regressed Polyphen2
+##########
+pp2.raw <- read.delim("res/UBE2I_polyphen2.txt",comment.char="#")
+rownames(pp2.raw) <- with(pp2.raw,paste0(o_aa1,o_pos,o_aa2))
+
+testable.pp2 <- data.frame(row.names=testable$mut,dms=testable$score,pp2=pp2.raw[testable$mut,"pph2_prob"])
+testable.pp2 <- na.omit(testable.pp2)
+testable.pp2$inv <- (1-testable.pp2$pp2+0.0001)/1.0002
+
+logit <- function(p) log(p/(1-p))
+testable.pp2$logitInv <- logit(testable.pp2$inv)
+lmz <- lm(testable.pp2$dms ~ testable.pp2$logitInv)
+testable.pp2$regr <- predict(lmz,testable.pp2)
+
+rmsds.pp2 <- numeric()
+rmsds.pp2[["regr"]] <- with(testable.pp2,sqrt(mean((dms-regr)^2)))
+
+
+####################################
+#Test decreasing sizes of training sets
+
+testable <- featable[!is.na(featable$score),]
+testfeat <- testable[,-c(4,5,6,7)]
+testscores <- testable[,"score"]
+
+reachable.testable.rows <- which(testable$mut %in% reachable.muts)
+z <- randomForest(testfeat[reachable.testable.rows,],testscores[reachable.testable.rows])
+pred <- predict(z,testfeat[-reachable.testable.rows,])
+real <- testable[-reachable.testable.rows,"score"]
+reachable.rmsd <- sqrt(mean((pred-real)^2))
+reachable.completeness <- length(reachable.testable.rows)/nrow(featable)
+
+
+#matrix completenesses to simulate
+completenesses <- seq(0.05, 1, 0.05)
+#restrict completenesses to those that leave at least 1/10 for cross-validation
+completenesses <- completenesses[which(completenesses < (nrow(testable)-floor(nrow(testable)/10))/nrow(featable))]
+#training set sample sizes corresponding to these completenesses
+samplesizes <- floor(completenesses * nrow(featable))
+
+rmsds.ss <- do.call(rbind,lapply(samplesizes, function(samplesize) {
+	replicate(3, {
+
+		#Random withholding, not by-the-book cross-validation!!
+		toRemove <- nrow(testable) - samplesize
+
+		#number of crossvalidation rounds necessary to approx. cover all testable rows
+		nrounds <- round(nrow(testable)/(nrow(testable)-samplesize))
+
+		cat("Samplesize:",samplesize,"\tRounds:",nrounds,"\n")
+
+		pb <- txtProgressBar(max=nrounds,style=3); pr <- 0
+		sqds <- do.call(c,mclapply(1:nrounds, function(i) {
+			withheldLines <- sample(1:nrow(testable),toRemove,replace=FALSE)
+			z <- randomForest(testfeat[-withheldLines,],testscores[-withheldLines])
+			setTxtProgressBar(pb,pr <<- pr+1)
+			pred <- predict(z,testfeat[withheldLines,])
+			real <- testable[withheldLines,"score"]
+			(pred-real)^2
+		},mc.cores=6))
+		close(pb)
+
+		sqrt(mean(sqds))
+	})
+}))
+rownames(rmsds.ss) <- completenesses
+colnames(rmsds.ss) <- c("r1","r2","r3")
+
+rmsds.ss <- cbind(
+	rmsds.ss,
+	mean=apply(rmsds.ss,1,mean),
+	se=apply(rmsds.ss,1,sd)/sqrt(3)
+)
+
+#For sample size 0, use the score mean for every prediction
+random.guessing <- sqrt(mean((testable$score-mean(testable$score))^2))
+
+html$subsection("Sample size vs RMSD")
+html$figure(function(){
+	# pdf("samplesizeVrmsd.pdf",5,5)
+	complPercent <- completenesses*100
+	plot(
+		complPercent,rmsds.ss[,"mean"],xlim=c(0,100),ylim=c(0.3,0.5),pch=20,
+		xlab="Map completeness (%)",ylab="RMSD",col="steelblue3"
+	)
+	points(0,random.guessing,col="steelblue3",pch=20)
+	text(0,random.guessing,"naive guessing",pos=4,cex=0.7)
+	points(reachable.completeness*100,reachable.rmsd,col="orange",pch=20)
+	text(reachable.completeness*100,reachable.rmsd,"SNP-accessible only",pos=4,cex=0.7)
+	arrows(
+		complPercent,rmsds.ss[,"mean"]-rmsds.ss[,"se"],
+		complPercent,rmsds.ss[,"mean"]+rmsds.ss[,"se"],
+		length=0.01,angle=90,code=3,
+		col="steelblue3"
+	)
+	abline(h=rmsds.pp2[[1]],col="orange",lty="dotted")
+	text(0,rmsds.pp2[[1]],"PolyPhen-2",pos=4,cex=0.7)
+
+	lfit <- lm(rmsds.ss[,"mean"] ~ complPercent)
+	coef <- coefficients(lfit)
+
+	lines(
+		seq(0,100,10),coef[[1]]+coef[[2]]*seq(0,100,10),
+		col="gray",lty="dashed"
+	)
+	# dev.off()
+},"samplesizeVrmsd",5,5)
 
 
 ####################################
@@ -265,7 +395,9 @@ html$figure(function(){
 	abline(v=rmsds,col="firebrick3",lty="dashed")
 	p <- pnorm(q=rmsds[[2]],mean=mean(random.rmsds),sd=sd(random.rmsds),lower.tail=FALSE)
 	text(rmsds[[1]],20,sprintf("Full POPCode:\nRMSD = %.02f",rmsds[[1]]),pos=4,cex=0.7)
-	text(rmsds[[2]],20,sprintf("SNP-accessible:\nRMSD = %.02f\nP = %.04f",rmsds[[2]],p),pos=4,cex=0.7)
+	text(rmsds[[2]],20,sprintf("SNP-accessible:\nRMSD = %.02f",rmsds[[2]]),pos=4,cex=0.7)
+	text(rmsds[[2]],16,scinotExpr(p),pos=4,cex=0.7)
+
 	text(rmsds[[3]],20,sprintf("Alanine-Scan:\nRMSD = %.02f",rmsds[[3]]),pos=4,cex=0.7)
 	text(mean(random.rmsds),5,"Random POPCode mut.\nat SNP-accessible sample size",cex=0.7)
 },paste0(outdir,"snpVpop"),7,4)
