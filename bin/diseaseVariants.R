@@ -13,7 +13,7 @@ library("beeswarm")
 
 
 outdir <- getArg("outdir",default="workspace/test/")
-# outdir <- getArg("outdir",default="workspace/20170131-175115/")
+# outdir <- getArg("outdir",default="workspace/20170322-140457/")
 
 #Initialize logger
 logger <- new.logger(paste0(outdir,"diseaseVariants.log"))
